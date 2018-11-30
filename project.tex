@@ -1,0 +1,146 @@
+\documentclass[twoside,11pt]{article}
+
+%================================ PREAMBLE ==================================
+
+%--------- Packages -----------
+\usepackage{fullpage}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{latexsym}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{algorithm,algorithmic}
+
+%---------- Spacing ----------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+%---------Definitions----------
+\newcommand{\Yh}{\hat{\mathcal{Y}}}
+\newcommand{\err}{\text{err}}
+\newcommand{\regret}{\text{regret}}
+
+\newcommand{\half}{{\textstyle{\frac{1}{2}}}}
+\renewcommand{\>}{{\rightarrow}}
+\renewcommand{\hat}{\widehat}
+\renewcommand{\tilde}{\widetilde}
+\newcommand{\grad}{{\nabla}}
+%
+\newcommand{\argmax}{\textup{\textrm{argmax}}}
+\newcommand{\argmin}{\textup{\textrm{argmin}}}
+\newcommand{\argsort}{\textup{\textrm{argsort}}}
+\newcommand{\sign}{\textup{\textrm{sign}}}
+\newcommand{\poly}{\textup{\textrm{poly}}}
+\newcommand{\er}{\textup{\textrm{er}}}
+\newcommand{\zo}{\textup{\textrm{0-1}}}
+\newcommand{\sq}{\textup{\textrm{sq}}}
+%
+\newcommand{\1}{{\mathbf 1}}
+\newcommand{\0}{{\mathbf 0}}
+\newcommand{\I}{{\mathbf I}}
+\newcommand{\R}{{\mathbb R}}
+\newcommand{\Z}{{\mathbb Z}}
+\newcommand{\N}{{\mathbb N}}
+\renewcommand{\P}{{\mathbf P}}
+\newcommand{\E}{{\mathbf E}}
+\newcommand{\Var}{{\mathbf{Var}}}
+%
+\renewcommand{\a}{{\mathbf a}}
+\renewcommand{\b}{{\mathbf b}}
+\renewcommand{\c}{{\mathbf c}}
+\renewcommand{\d}{{\mathbf d}}
+\newcommand{\f}{{\mathbf f}}
+\renewcommand{\k}{{\mathbf k}}
+\newcommand{\p}{{\mathbf p}}
+\newcommand{\q}{{\mathbf q}}
+\renewcommand{\u}{{\mathbf u}}
+\newcommand{\w}{{\mathbf w}}
+\newcommand{\x}{{\mathbf x}}
+\newcommand{\y}{{\mathbf y}}
+%
+\newcommand{\A}{{\mathbf A}}
+\newcommand{\bC}{{\mathbf C}}
+\newcommand{\C}{{\mathcal C}}
+\newcommand{\cD}{{\mathcal D}}
+\newcommand{\F}{{\mathcal F}}
+\renewcommand{\H}{{\mathcal H}}
+\newcommand{\K}{{\mathbf K}}
+\renewcommand{\L}{{\mathcal L}}
+\newcommand{\bL}{{\mathbf L}}
+\newcommand{\cN}{{\mathcal N}}
+\newcommand{\W}{{\mathbf W}}
+\newcommand{\X}{{\mathcal X}}
+\newcommand{\bX}{{\mathbf X}}
+\newcommand{\Y}{{\mathcal Y}}
+%
+\newcommand{\bloss}{{\boldsymbol \ell}}
+\newcommand{\blambda}{{\boldsymbol \lambda}}
+\newcommand{\bmu}{{\boldsymbol \mu}}
+\newcommand{\bnu}{{\boldsymbol \nu}}
+\newcommand{\bSigma}{{\boldsymbol \Sigma}}
+\newcommand{\seta}{{\boldsymbol \eta}}
+\newcommand{\bpsi}{{\boldsymbol \psi}}
+\newcommand{\bphi}{{\boldsymbol \phi}}
+\newcommand{\bPhi}{{\boldsymbol \Phi}}
+\newcommand{\balpha}{{\boldsymbol \alpha}}
+\newcommand{\bxi}{{\boldsymbol \xi}}
+
+%=============================== END PREAMBLE ===============================
+
+\begin{document}
+
+%================================ COVER PAGE ================================
+
+\emph{\footnotesize{CIS 620 Fall 2018, Project Report}}
+
+\vspace{12pt}
+
+\begin{center}
+
+%Fill in your project title
+\textbf{\Large{A Survey of Ranking Algorithms}}
+
+\vspace{12pt}
+
+%Fill in author names
+Kishor Jothimurugan \\ (PennKey: \texttt{pennkey1}; Email: \texttt{email1@xxx.upenn.edu}) \\[4pt]
+Nicolas Koh \\ (PennKey: \texttt{pennkey2}; Email: \texttt{email2@xxx.upenn.edu}) \\[4pt]
+Mingyang Liu \\ (PennKey: \texttt{pennkey3}; Email: \texttt{email3@xxx.upenn.edu}) 
+
+\end{center}
+
+%---
+
+%Add abstract 
+\begin{abstract}
+Abstract text goes here.
+\end{abstract}
+
+\vspace{12pt}
+
+%============================= MAIN DOCUMENT ================================
+
+\input{introduction.tex}
+\input{subset-ranking.tex}
+\input{ndcg.tex}
+\input{pd.tex}
+\input{problems.tex}
+\input{job-scheduling.tex}
+\input{online-experts.tex}
+
+\section*{Acknowledgments}
+
+
+\newpage
+%============================= BIBLIOGRAPHY ===============================
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+
+\end{document}
+
+%=========================== END DOCUMENT ==============================

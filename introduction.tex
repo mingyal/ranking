@@ -1,0 +1,158 @@
+\section{The problem of ranking}
+In this project, we study the general problem of supervised ranking and survey
+work in the area, paying attention to consistency results and
+algorithms that perform empirically well but lack theoretical backing.
+
+Roughly, the goal of supervised ranking is to learn from appropriate samples
+in some way so as to learn how to rank, i.e., given a new set of $n$ items,
+determine how they can be ordered so as to do well on some performance measure.
+
+The canonical application is web search. Here, the search engine is given
+a query $q$ and may find $n$ documents $v_1, \ldots, v_n$, but
+has to determine an order in which they should be presented to a user.
+Early on, this ordering was determined by hand-tuned models~\cite{bm25},
+but there is good reason to believe that models adapting to collected data
+(samples) would perform better. 
+
+Some appropriate samples are:
+\begin{itemize}
+\item (Binary relevance)
+  $S = \{ ((q_i, (v_{i, j})_{j=1}^{n_i}), (y_{i, j})_{j=1}^{n_i}) \}_{i=1}^m$, where
+  $y_{i,j} \in \{0, 1\}$.
+  That is, an instance is a query $q_i$ with a list of $n_i$ documents;
+  the label for the instance is a vector $(y_{i, j})_{j=1}^{n_i}$ indicating,
+  for each document, whether it is relevant or not.
+  This may be determined, e.g., by whether there is a
+  user who clicked on the link or not.
+\item (Relevance scores)
+  $S = \{ ( (q_i, (v_{i, j})_{j=1}^{n_i}), (y_{i, j})_{j=1}^{n_i}) \}_{i=1}^m$,
+  where $y_{i,j} \in R \subseteq \R_+$.
+  Same as the previous case, except that each document has a relevance
+  score. 
+  This may be determined, e.g., by the number of users who clicked on the link.
+\item (Preference graphs) 
+  $S = \{((q_i, (v_{i,j})_{j=1}^{n_i}), G_i)\})_{i=1}^m$, where $G_i$ is a weighted
+  directed graph on the $n_i$ documents, all weights being non-negative.
+  We can interpret $v_j \overset{w_{j,k}}{\to} v_k$ as saying that $v_j$ is
+  preferred to $v_k$ with an importance weight of $w_{j,k}$.
+  Note that this case subsumes the first two: a label for binary relevance
+  can be coded as a directed bipartite graph in the obvious way
+  with all weights $1$, and a label for relevance scores may be coded as a
+  DAG with weights being the difference in scores.
+  An important special case is when the graph consists
+  of just a single edge, expressing a single pairwise preference.
+  Preference graphs allow for cases where complete information on relevance is
+  hard to obtain; for instance, an e-commerce ranking system may obtain $S$
+  from a consumer survey, and surveyees should be allowed to specify
+  preferences for only a small set of items. Ranking from preference graphs
+  also have applications beyond just information retrieval, e.g., in
+  recommendation systems and social choice theory, where we may want to
+  aggregate preferences from different agents into a global ranking~\cite{}.
+\end{itemize}
+One may view relevance scores as a natural multiclass generalization of binary
+relevance labels, and preference graphs as the
+structured-prediction-generalization of relevance scores.
+
+In each case, the goal is for the learning algorithm to learn from these samples
+and output a ranking function
+$f: Q \times \bigcup_{n=1}^\infty D^n \to \bigcup_{n=1}^\infty P_n$, where $Q$
+is the set of queries, $D$ is the set of documents,
+and $P_n$ is the set of permutations on $[n]$.
+The formalism can be simplified by thinking of query-document pairs as feature
+vectors in some space $\X$ (which is also done in practice), so
+that dependence on queries can be dropped.
+
+Formally, the supervised ranking problem can be framed as follows. There is an
+instance space $\X$, a label space $\Y$ (which varies as above), and the
+prediction space is $\Yh = \bigcup_{n=1}^\infty P_n$. A permutation
+$\sigma \in Y_h$ is interpreted such that $\sigma(i)$ is the position of the
+$i$th item. A learning algorithm
+takes $S = ((x_{i,j})_{j=1}^{n_i}, y_i)_{i=1}^m$ as input,
+where $x_{i,j} \in \X \subseteq \R^d$ is a feature vector
+and $y_i \in \Y$ is a label following the cases above,
+and outputs a function
+$f_S: \bigcup_{n=1}^\infty \X^n \to \bigcup_{n=1}^\infty P_n$.
+There is no loss of generality, since the feature space can in principle 
+include $Q$ itself.
+
+Performance of the learning algorithm is measured by some performance measure
+$M: \Yh \times \Y \to \R_+$ or loss function
+$\ell: \Yh \times \Y \to \R_+$. The goal is to minimize the $\ell$-risk
+\begin{align*}
+  \err_D^\ell[f_S] = \E_{(\vec{X}, Y) \sim D} [\ell(f_S(\vec{X}), Y)],
+\end{align*}
+for all distributions $D$ on $(\bigcup_{n=1}^\infty X^n) \times \Y$, or sometimes,
+for distributions within some suitable class.
+The notions of Bayes $\ell$-risk, conditional $\ell$-risk,
+Bayes conditional $\ell$-risk, $\ell$-regret, and $\ell$-consistency of the
+learning algorithm can all be defined similarly to binary classification
+covered in class.
+
+Some common measures and losses are:
+\begin{itemize}
+\item Precision: For binary relevance labels, 
+  \begin{align*}
+    \text{AvgPrec}@K(\sigma, (y_j)_{j=1}^n)
+    = \frac{1}{K} \sum_{r=1}^K \text{Prec}@r(\sigma, (y_j)_{j=1}^n)
+    = \frac{1}{K} \sum_{r=1}^K \frac{\sum_{j : \sigma(j) \leq r} y_j}{r}.
+  \end{align*}
+  Precision at $r$ is the proportion of relevant documents among those 
+  ranked up to $r$ according to $\sigma$. Average precision is the
+  non-truncated version of this measure, and mean average precision (MAP)
+  averages \text{AvgPrec} over all queries in a set, i.e.
+  \begin{align*}
+    \text{MAP}(\sigma, ((y_j)_{j=1}^{n_i})_{i=1}^m) =
+    \frac{1}{m} \sum_{i=1}^m \text{AvgPrec}(\sigma, (y_j)_{j=1}^{n_i}).
+  \end{align*}
+\item Normalized Discounted Cumulative Gain (NDCG): For relevance scores,
+  the discounted cumulative gain at $K$ is 
+  \begin{align*}
+    \text{DCG}@K(\sigma, (y_j)_{j=1}^n)
+    = \sum_{r=1}^K \frac{G(y_{\sigma^{-1}(r)})}{D(r)}
+    = \sum_{i: \sigma(i) \leq K} \frac{G(y_i)}{D(\sigma(i))}.
+  \end{align*}
+  (The first sum runs over positions and the second sum runs over
+  object indices.) The gain function $G$ boosts relevance scores, and is
+  normally taken to be $G(y) = 2^y - 1$. The discount function $D$ discounts
+  the importance of the term based on the position of the item, and is
+  normally taken to be $D(\sigma(i)) = \log(1 + \sigma(i))$. As before, DCG
+  is the non-truncated version of this, and NDCG normalizes DCG to obtain
+  a number in $[0,1]$, defined as
+  \begin{align*}
+    \text{NDCG}(\sigma, (y_j)_{j=1}^n)
+    = \frac{1}{N((y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n),
+  \end{align*}
+  where
+  \begin{align*}
+    N((y_j)_{j=1}^n)
+    = \frac{1}{\max_{\sigma'} DCG(\sigma', (y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n).
+  \end{align*}
+  In many applications, it is more important for the output to rank well for
+  items that are near the top compared to ones below, and to rank well for
+  highly relevant items compared to those with low scores; NDCG factors
+  these in using the discount and gain functions respectively.
+
+\item Weighted pairwise disgreement loss: For preference graphs, the most
+  natural loss to define is just:
+  \begin{align*}
+    \ell(\sigma, G)
+    = \sum_{j,k: j \neq k} w_{j,k}^G \1[\sigma(j) > \sigma(k)]
+  \end{align*}
+  Here the sum is over object indices, and we can take $w_{j,k}^G = 0$ if
+  the edge $j \to k$ is not in $G$. 
+\end{itemize}
+It is common for the algorithm to output a scoring function 
+$f_S: \bigcup_{n=1}^\infty \X^n \to \mathbb{R}^n$ instead of a function returning
+permutations, so that standard optimization can be used; a permutation can
+then be obtained by sorting scores and breaking ties in some way.
+Even so, optimizing these ranking measures and losses directly is difficult
+because the functions 
+
+Solving the ranking problem directly is difficult because the set of
+permutations is exponentially large. 
+
+Indeed, several attempts to solve the ranking problem treated
+it in terms of classification and regression; 
+
+The rest of the paper is organized as follows. In Section~\ref{sec:ndcg},
+we 
