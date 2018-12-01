@@ -1,11 +1,54 @@
 
-\subsection{Job scheduling}
-In the ranking problem, the prediction space is the set of permutations, which
-one can think of as the set of total orders. We considered generalizing
-this to partial orders with possibly some restriction, and job scheduling
-emerged as a possible setting.
+\subsection{Task scheduling}
+Consider a cloud service that offers distributed infrastructure to process
+jobs, or a modern data processing system that processes queries on large
+databases.
+In such systems, queries may be passed to an execution planner
+which uses statistics, current workloads, and cost models to choose an optimal
+plan among a set of candidate execution plans.
+These plans are in the form of directed acyclic graphs with edges indicating
+task dependencies.
+Some metrics for choosing plans include makespan (time to finish executing
+the DAG) and resource consumption (e.g., to obtain fairness between queries).
+One challenge, however, is that available resources change with time,
+so an execution plan deemed optimal before execution can become sub-optimal
+during its lifetime~\cite{osdi-qoop}.
 
-In this scenario, we imagine that queries may arrive at a 
+With this as setting, one may consider learning a decision rule for
+scheduling tasks.
+We consider $\X$ to be some set of feature vectors
+(extracted from the query, tasks, resources at time of execution,
+time-of-day, and so on), and $\Y$ to be the set of preference graphs with
+appropriate augmentation depending on the metric of interest. Samples
+$S = \{((x_{i,j})_{j=1}^{n_i}, y_i)_{i=1}^m\}$ may come from computing the best DAG
+in hindsight and collecting statistics. We want the learning algorithm to
+output a DAG that minimizes $\ell$-risk for some suitable loss $\ell$.
 
-a set of tasks with possible dependencies 
+If we make the simplification that execution of plans proceed in rounds (e.g.\
+MapReduce), ranking techniques can be brought to bear. Specifically,
+let the prediction space be
+$\Yh = \{f: \bigcup_{i=1}^n \X^n \to \mathbb{Z}_+\}$,
+i.e.\ functions which stratifies jobs into rounds. This is no different from
+functions that output relevance scores.
+
+\subsubsection{Minimizing Job Completion Time}
+Here, we want the scoring function to output as few rounds as possible.
+A way to do this is as follows. For $n$ items, let
+\begin{align*}
+  \Y_n &= \{ (G, \vec{c})
+  \mid \text{$G$ is a weighted DAG on $[n]$ and $\vec{c} = c_1, \ldots, c_n$}
+  \}.
+\end{align*}
+The label space is $\Y = \bigcup_{n=1}^\infty \Y_n$. We interpret each $c_i$
+to be the unit cost incurred for scheduling a task past round $i$.
+
+The loss $\ell$ can then be defined as:
+\begin{align*}
+  \ell(f, (G, \vec{c}))
+  = \sum_{i,j: i \neq j} w_{i,j}^G \1_{f(i) \geq f(j)}
+  + \sum_{i=1}^n c_i \sum_{j=1}^n \1_{f(j) \geq i}
+\end{align*}
+
+
+
 
