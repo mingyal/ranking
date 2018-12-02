@@ -2,9 +2,15 @@
 \label{sec:ndcg}
 If the algorithm is to output a scoring function and has access to relevance
 scores as labels, perhaps the simplest idea is to minimize similarity between
-its output 
-
-
+the output and scores. In~\cite{bayes-optimal-subset-ranking}, it was
+established that minimizing the pointwise least-squares surrogate
+\begin{align*}
+  \phi(\vec{s}, y) = \sum_{j=1}^n {(s_j - y_j)}^2
+\end{align*}
+actually minimizes $1 - \text{NDCG}(\vec{s}, y)$ because we can upper bound
+the latter by some multiple of the former. But this upper bound is coarse,
+and the result also does not tell us if the surrogate is consistent. 
+Similar 
 
 
 
