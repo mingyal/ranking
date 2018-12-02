@@ -96,16 +96,26 @@ size $m$ which is drawn i.i.d. from $D$. Typically, minimizing the empirical
 loss $\sum_{i=i}^m \ell(f(\x_i),y_i)$ over some suitable function class $\F_m$
 gives a consistent algorithm but is computationally hard.
 Therefore surrogate losses are used. Instead of learning a function from
-$\X \to \Yh$, one typically learns a function $h_S:\X \to \C$ where the
+$\X^n \to \Yh$, one typically learns a function $h_S: \X^n \to \C$ where the
 surrogate space $\C$ is a convex set in $\R^d$ for some $d$. In the case of
 ranking, $\C$ is usually $\R^n$ or $\R^{(n)(n-1)/2}$ which correspond to learning
 pointwise and pairwise scores respectively.
 The learned function is composed with a prediction map $\pred: \C \to \Yh$ to
 map instances to permutations, $f_S = \pred \circ h_S$.
 
-The function $h_S$ is obtained by minimizing a surrogate loss $\psi:\C \times \Y \to \R_+$ on the samples in $S$, $h_S \in \argmin_{h\in\H_m}\sum_{i=1}^m \psi(h(\x_i),y_i)$. This gives consistency w.r.t. $\psi$. Given a distribution $D$ over $\X \times \Y$, define $\psi$-risk as follows:
+The function $h_S$ is obtained by minimizing a surrogate loss
+$\psi:\C \times \Y \to \R_+$ on the samples in $S$,
+$h_S \in \argmin_{h\in\H_m}\sum_{i=1}^m \psi(h(\x_i),y_i)$.
+This gives consistency w.r.t. $\psi$. Given a distribution $D$ over
+$\X \times \Y$, define $\psi$-risk as follows:
 $$\err_D^\psi[h_S] = \E_{(X,Y)\sim D}[\psi(h_S(X),Y)]$$
-The learning algorithm is $\psi$-consistent if $\err_D^\psi[h_S]$ converges in probablity to $\err_D^{\psi,*}$ as $m = |S|$ goes to infinity, where $\err_D^{\psi,*} = \inf_{h:\X \to \C}\err_D^\psi[h]$. A surrogate $\psi$ along with a prediction mapping $\pred$ is said to be $\ell$-consistent if $\psi$-consistency of a learning algorithm that outputs $h_S$ on input $S$ implies $\ell$-consistency of the algorithm that ouputs $f_S = \pred \circ h_S$ on input $S$.
+The learning algorithm is $\psi$-consistent if $\err_D^\psi[h_S]$
+converges in probablity to $\err_D^{\psi,*}$ as $m = |S|$ goes to infinity,
+where $\err_D^{\psi,*} = \inf_{h:\X \to \C}\err_D^\psi[h]$.
+A surrogate $\psi$ along with a prediction mapping $\pred$ is said to be
+$\ell$-consistent if $\psi$-consistency of a learning algorithm that
+outputs $h_S$ on input $S$ implies $\ell$-consistency of the algorithm that
+outputs $f_S = \pred \circ h_S$ on input $S$.
 
 Ramaswamy and Agarwal \cite{ramaswamy2016convex} showed that a property of
 surrogates called $\ell$-calibration is sufficient for consistency of general
