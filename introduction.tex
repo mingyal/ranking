@@ -94,7 +94,7 @@ The function $h_S$ is obtained by minimizing a surrogate loss $\psi:\C \times \Y
 $$\err_D^\psi[h_S] = \E_{(X,Y)\sim D}[\psi(h_S(X),Y)]$$
 The learning algorithm is $\psi$-consistent if $\err_D^\psi[h_S]$ converges in probablity to $\err_D^{\psi,*}$ as $m = |S|$ goes to infinity, where $\err_D^{\psi,*} = \inf_{h:\X \to \C}\err_D^\psi[h]$. A surrogate $\psi$ along with a prediction mapping $\pred$ is said to be $\ell$-consistent if $\psi$-consistency of a learning algorithm that outputs $h_S$ on input $S$ implies $\ell$-consistency of the algorithm that ouputs $f_S = \pred \circ h_S$ on input $S$.
 
-Ramaswamy and Agarwal \cite{ramaswamy2016convex} showed that a property of surrogates called $\ell$-calibration is sufficient for consistency in the general multiclass prediction setting. They also define the notion of Convex Calibration dimension which is the smallest $d$ for which there is a calibrated convex surrogate with a surrogate space $\C \subseteq \R^d$. For most ranking problems, this is bounded above by $n$ or $n^2$. 
+Ramaswamy and Agarwal \cite{ramaswamy2016convex} showed that a property of surrogates called $\ell$-calibration is sufficient for consistency of general multiclass losses by extending the result for 0-1 loss in \cite{tewari2007consistency}. They also define the notion of Convex Calibration dimension which is the smallest $d$ for which there is a calibrated convex surrogate with a surrogate space $\C \subseteq \R^d$. For most ranking problems, this is bounded above by $n$ or $n^2$. 
 
 % <<<<<<< 58d79c7bd0f1085a68d48fe8cf3a1c80e21a7fe6
 % It is thus important to find good surrogate losses for these true losses, in
@@ -272,8 +272,9 @@ There are many surrogates that are used in practice that are non-convex. In such
 
 The rest of the report is organized as follows.
 In Section~\ref{sec:loss0-1} we look at the standard 0-1 loss on permutations.
->>>>>>> Changes to Introduction
+% >>>>>>> Changes to Introduction
 In Section~\ref{sec:binary-relevance}, we consider surrogates for losses
 defined for binary relevance labels.
 In Section~\ref{sec:ndcg}, we consider surrogates for NDCG.
 In Section~\ref{sec:pd}, we consider surrogates for PD loss.
+In Section~\ref{sec:problems}, we look at extensions to ranking and other problems considered in this project.

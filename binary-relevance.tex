@@ -6,8 +6,13 @@ The precision@$q$ loss is a measure of how (im)precise the prediction is, with r
 $$\ell_{P@q}(\sigma,\y) = 1 - \frac{1}{q}\sum_{i:\sigma(i)\leq q}y_i$$
 A consistent surrogate loss $\psi_{P@q}:\R^n \times \Y \to \R_+$ and its corresponding prediction mapping $\pred_{P@q}:\R^n \to S_n$ are given by:
 $$\psi_{P@q}(\u,\y) = \lVert \u - \y \rVert_2^2$$
-$$\pred_{P@q}(\u) = \argmax_{\sigma\in S_n}\sum_{i:\sigma(i)\leq q}u_i$$
+$$\pred_{P@q}(\u) \in \argmax_{\sigma\in S_n}\sum_{i:\sigma(i)\leq q}u_i$$
 In this case, the prediction mapping just amounts to sorting the indices in decreasing order of the $\u$ values. 
 
 \subsection{MAP}
-The mean average precision, as the name suggests, is one minus the avergae of precision at 
+The mean average precision, as the name suggests, is a loss based on the avergae of precision at positions where the permutation maps the documents labelled 1 in $\y$. The loss $\ell_{\text{MAP}}:\{0,1\}^n \times S_n \to \R_+$ is given by,
+$$\ell_{\text{MAP}} = 1 - \frac{1}{\lVert\y\rVert_1}\sum_{i:y_i = 1}\frac{1}{\sigma(i)}\sum_{j:\sigma(j) \leq \sigma(i)}y_j$$
+where $\lVert\y\rVert_1 = \sum_{i=1}^ny_i$ is the number relevant documents according to $\y$. It is known that there cannot be an $n$-dimensional convex calibrated surrogate for this loss. \cite{ramaswamy2013convex} gives an $O(n^2)$ dimensional surrogate for this loss. The consistent (convex) surrogate $\psi_{\text{MAP}}:  \R^{n(n+1)/2} \times \{0,1\}^n \to \R_+$ and the corresponding $\pred$ mapping is as follows:
+$$\psi_{\text{MAP}}(\u,\y) = \sum_{i=1}^n\sum_{j=1}^i\Big(u_{ij} - \frac{y_iy_j}{\lVert\y\rVert_1}\Big)^2$$
+$$\pred_{\text{MAP}(\u)} \in \argmax_{\sigma\in S_n}\sum_{i=1}^n\sum_{j=1}^i \frac{u_{ij}}{\max(\sigma(i),\sigma(j))}$$
+This method involves learning a score for every unordered pair of documents/indices where a higher score indicates that both elements of the pair should be higher in rank. Unfortunately, there is no known polynomial time algorithm to compute the $\pred$ function. Therefore, one has to make lwo noise assumptions on the distribution $D$ to get fast algorithms. Under one such condition which assumes that the expected values of $y_{ii}/\lVert\y\rVert_1$ given any $x \in \X$ are more relevant than the cross terms $y_{ij}/\lVert\y\rVert_1$ where $i \neq j$, one can simply sort the indices in decreasing order of the diagonal terms $u_{ii}$ to compute the permutation from scores. In that scenario, it is also enough to just learn the diagonal terms giving an $n$-dimensional surrogate.  
