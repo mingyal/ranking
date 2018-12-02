@@ -1,4 +1,4 @@
-\section{The problem of ranking}
+\section{Introduction to Ranking}
 In this project, we study the general problem of supervised ranking and survey
 work in the area, paying attention to consistency results and
 algorithms that perform empirically well but lack theoretical backing.
@@ -14,24 +14,24 @@ Early on, this ordering was determined by hand-tuned models~\cite{bm25},
 but there is good reason to believe that models adapting to collected data
 (samples) would perform better. 
 
-Some appropriate samples are:
+A sample is a (multi)set of instance-label pairs. Some appropriate types of samples are:
 \begin{itemize}
 \item (Binary relevance)
-  $S = \{ ((q_i, (v_{i, j})_{j=1}^{n_i}), (y_{i, j})_{j=1}^{n_i}) \}_{i=1}^m$, where
-  $y_{i,j} \in \{0, 1\}$.
-  That is, an instance is a query $q_i$ with a list of $n_i$ documents;
-  the label for the instance is a vector $(y_{i, j})_{j=1}^{n_i}$ indicating,
+  $S = \{ ((q_i, (v_{i, j})_{j=1}^{n}), \y_i )\}_{i=1}^m$, where
+  $\y_{i} \in \{0, 1\}^n$.
+  That is, an instance is a query $q_i$ with a list of $n$ documents;
+  the label for the instance is a vector $\y_i = (y_{i, j})_{j=1}^{n}$ indicating,
   for each document, whether it is relevant or not.
   This may be determined, e.g., by whether there is a
   user who clicked on the link or not.
 \item (Relevance scores)
-  $S = \{ ( (q_i, (v_{i, j})_{j=1}^{n_i}), (y_{i, j})_{j=1}^{n_i}) \}_{i=1}^m$,
-  where $y_{i,j} \in R \subseteq \R_+$.
+  $S = \{ ( (q_i, (v_{i, j})_{j=1}^{n}), \y_i )\}_{i=1}^m$,
+  where $\y_i \in R^n \subseteq \R_+^n$.
   Same as the previous case, except that each document has a relevance
   score. 
   This may be determined, e.g., by the number of users who clicked on the link.
 \item (Preference graphs) 
-  $S = \{((q_i, (v_{i,j})_{j=1}^{n_i}), G_i)\})_{i=1}^m$, where $G_i$ is a weighted
+  $S = \{((q_i, (v_{i,j})_{j=1}^{n}), G_i)\})_{i=1}^m$, where $G_i$ is a weighted
   directed graph on the $n_i$ documents, all weights being non-negative.
   We can interpret $v_j \overset{w_{j,k}}{\to} v_k$ as saying that $v_j$ is
   preferred to $v_k$ with an importance weight of $w_{j,k}$.
@@ -55,23 +55,23 @@ structured-prediction-generalization of relevance scores.
 
 In each case, the goal is for the learning algorithm to learn from these samples
 and output a ranking function
-$f: Q \times \bigcup_{n=1}^\infty D^n \to \bigcup_{n=1}^\infty P_n$, where $Q$
+$f: Q \times D^n \to S_n$, where $Q$
 is the set of queries, $D$ is the set of documents,
-and $P_n$ is the set of permutations on $[n]$.
+and $S_n$ is the set of permutations on $[n]$.
 The formalism can be simplified by thinking of query-document pairs as feature
 vectors in some space $\X$ (which is also done in practice), so
 that dependence on queries can be dropped.
 
 Formally, the supervised ranking problem can be framed as follows. There is an
 instance space $\X$, a label space $\Y$ (which varies as above), and the
-prediction space is $\Yh = \bigcup_{n=1}^\infty P_n$. A permutation
-$\sigma \in Y_h$ is interpreted such that $\sigma(i)$ is the position of the
+prediction space is $\Yh = S_n$. A permutation
+$\sigma \in \Yh$ is interpreted such that $\sigma(i)$ is the position of the
 $i$th item. A learning algorithm
-takes $S = ((x_{i,j})_{j=1}^{n_i}, y_i)_{i=1}^m$ as input,
-where $x_{i,j} \in \X \subseteq \R^d$ is a feature vector
+takes $S = (\x_i, y_i)_{i=1}^m$ as input,
+where $\x_{i} \in \X \subseteq \R^d$ is a feature vector
 and $y_i \in \Y$ is a label following the cases above,
 and outputs a function
-$f_S: \bigcup_{n=1}^\infty \X^n \to \bigcup_{n=1}^\infty P_n$.
+$f_S: \X \to S_n$.
 There is no loss of generality, since the feature space can in principle 
 include $Q$ itself.
 
@@ -79,137 +79,200 @@ Performance of the learning algorithm is measured by some performance measure
 $M: \Yh \times \Y \to \R_+$ or loss function
 $\ell: \Yh \times \Y \to \R_+$. The goal is to minimize the $\ell$-risk
 \begin{align*}
-  \err_D^\ell[f_S] = \E_{(\vec{X}, Y) \sim D} [\ell(f_S(\vec{X}), Y)],
+  \err_D^\ell[f_S] = \E_{({X}, Y) \sim D} [\ell(f_S({X}), Y)],
 \end{align*}
-for all distributions $D$ on $(\bigcup_{n=1}^\infty X^n) \times \Y$
-within some suitable class.
-The notions of Bayes $\ell$-risk, conditional $\ell$-risk,
-Bayes conditional $\ell$-risk, $\ell$-regret, and $\ell$-consistency of the
-learning algorithm can all be defined similarly to binary classification
-covered in class.
+for some unknown distribution $D$ on $\X \times \Y$ from which the samples are drawn i.i.d.
+The Bayes $\ell$-risk for a given distribution $D$ is the minimum possible $\ell$-risk, denoted $\err^{l,*}_D = \inf_{f:\X \to \Yh} \err^l_D[f]$. A learning algorithm is said to be $\ell$-consistent if for any distribution $D$,
+$$\err_D^l[f_S] \xrightarrow{\Pr} \err_D^{l,*}$$
+\begin{center}
+ as
+\end{center}
+$$m \to \infty$$
+where $m = |S|$ is the sample size and the probability is over samples $S$ of size $m$ which is drawn i.i.d. from $D$. Typically, minimizing the emprical loss $\sum_{i=i}^m \ell(f(\x_i),y_i)$ over some suitable function class $\F_m$ gives a consistent algorithm but is computationally hard.  Therefore surrogate losses are used. Instead of learning a function from $\X \to \Yh$, one typically learns a function $h_S:\X \to \C$ where the surrogate space $\C$ is a convex set in $\R^d$ for some $d$. In the case of ranking, $\C$ is usually $\R^n$ or $\R^{(n)(n-1)/2}$ which correspond to learning pointwise and pairwise scores respectively. The learned function is composed with a prediction map $\pred: \C \to \Yh$ to map instances to permutations, $f_S = \pred \circ h_S$.
 
-Some common measures and losses are:
-\begin{itemize}
-\item Precision: For binary relevance labels, 
-  \begin{align*}
-    \text{AvgPrec}@K(\sigma, (y_j)_{j=1}^n)
-    = \frac{1}{K} \sum_{r=1}^K \text{Prec}@r(\sigma, (y_j)_{j=1}^n)
-    = \frac{1}{K} \sum_{r=1}^K \frac{\sum_{j : \sigma(j) \leq r} y_j}{r}.
-  \end{align*}
-  Precision at $r$ is the proportion of relevant documents among those 
-  ranked up to $r$ according to $\sigma$. Average precision is the
-  non-truncated version of this measure, and mean average precision (MAP)
-  averages \text{AvgPrec} over all queries in a set, i.e.
-  \begin{align*}
-    \text{MAP}(\sigma, ((y_j)_{j=1}^{n_i})_{i=1}^m) =
-    \frac{1}{m} \sum_{i=1}^m \text{AvgPrec}(\sigma, (y_j)_{j=1}^{n_i}).
-  \end{align*}
-\item Normalized Discounted Cumulative Gain (NDCG): For relevance scores,
-  the discounted cumulative gain at $K$ is 
-  \begin{align*}
-    \text{DCG}@K(\sigma, (y_j)_{j=1}^n)
-    = \sum_{r=1}^K \frac{G(y_{\sigma^{-1}(r)})}{D(r)}
-    = \sum_{i: \sigma(i) \leq K} \frac{G(y_i)}{D(\sigma(i))}.
-  \end{align*}
-  (The first sum runs over positions and the second sum runs over
-  object indices.) The gain function $G$ boosts relevance scores, and is
-  normally taken to be $G(y) = 2^y - 1$. The discount function $D$ discounts
-  the importance of the term based on the position of the item, and is
-  normally taken to be $D(\sigma(i)) = \log(1 + \sigma(i))$. As before, DCG
-  is the non-truncated version of this, and NDCG normalizes DCG to obtain
-  a number in $[0,1]$, defined as
-  \begin{align*}
-    \text{NDCG}(\sigma, (y_j)_{j=1}^n)
-    = \frac{1}{N((y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n),
-  \end{align*}
-  where
-  \begin{align*}
-    N((y_j)_{j=1}^n)
-    = \frac{1}{\max_{\sigma'} DCG(\sigma', (y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n).
-  \end{align*}
-  In many applications, it is more important for the output to rank well for
-  items that are near the top compared to ones below, and to rank well for
-  highly relevant items compared to those with low scores; NDCG factors
-  these in using the discount and gain functions respectively.
+The function $h_S$ is obtained by minimizing a surrogate loss $\psi:\C \times \Y \to \R_+$ on the samples in $S$, $h_S \in \argmin_{h\in\H_m}\sum_{i=1}^m \psi(h(\x_i),y_i)$. This gives consistency w.r.t. $\psi$. Given a distribution $D$ over $\X \times \Y$, define $\psi$-risk as follows:
+$$\err_D^\psi[h_S] = \E_{(X,Y)\sim D}[\psi(h_S(X),Y)]$$
+The learning algorithm is $\psi$-consistent if $\err_D^\psi[h_S]$ converges in probablity to $\err_D^{\psi,*}$ as $m = |S|$ goes to infinity, where $\err_D^{\psi,*} = \inf_{h:\X \to \C}\err_D^\psi[h]$. A surrogate $\psi$ along with a prediction mapping $\pred$ is said to be $\ell$-consistent if $\psi$-consistency of a learning algorithm that outputs $h_S$ on input $S$ implies $\ell$-consistency of the algorithm that ouputs $f_S = \pred \circ h_S$ on input $S$.
 
-\item Weighted pairwise disgreement loss: For preference graphs, the most
-  natural loss to define is just:
-  \begin{align*}
-    \ell_{\text{PD}}(\sigma, G)
-    = \sum_{j,k: j \neq k} w_{j,k}^G \1[\sigma(j) > \sigma(k)]
-  \end{align*}
-  Here the sum is over object indices, and we can take $w_{j,k}^G = 0$ if
-  the edge $j \to k$ is not in $G$. 
-\end{itemize}
-Note that while the pairwise disagreement (PD) loss is natural for preference
-graphs, and preference graphs generalize relevance scores, PD loss is not
-directly related to NDCG.
+Ramaswamy and Agarwal \cite{ramaswamy2016convex} showed that a property of surrogates called $\ell$-calibration is sufficient for consistency in the general multiclass prediction setting. They also define the notion of Convex Calibration dimension which is the smallest $d$ for which there is a calibrated convex surrogate with a surrogate space $\C \subseteq \R^d$. For most ranking problems, this is bounded above by $n$ or $n^2$. 
 
-The ranking problem is difficult because the search
-space is exponentially large, and the ranking measures and losses are
-sensitive only to changes in rank and are hence flat or discontinuous
-everywhere (in the output of $h_S$). This makes it difficult to optimize
-using standard means like gradient descent. 
+% <<<<<<< 58d79c7bd0f1085a68d48fe8cf3a1c80e21a7fe6
+% It is thus important to find good surrogate losses for these true losses, in
+% particular ones that can be optimized efficiently for and are statistically
+% consistent.
+% Surrogates can be classified into being pointwise, pairwise,
+% or listwise~\cite{ir-survey}.
+% Pointwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
+% \end{align*}
+% for some $\phi'$, i.e., the loss decomposes over individual objects. 
+% Pairwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
+%   \phi(\vec{s}, G)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+% \end{align*}
+% for some $\phi'$,
+% i.e., the loss decomposes over pairs. Listwise surrogates are
+% like the true losses, and do not decompose easily like the other two.
+% From their forms, pointwise surrogates apply to
+% relevance labels (binary or not), while pairwise and listwise surrogates
+% apply to all three forms of labels.
+% 
+% Beyond their distinct forms, the more salient point is that they exemplify
+% different approaches to the problem.
+% A pointwise loss is about determining the rank of an item directly.
+% When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be broken up
+% into sample points $\{(x_{i, j}, y_{i, j})\}_{j=1}^{n_i}$, and the loss may be
+% minimized using techniques from ordinal regression~\cite{}.
+% A pairwise loss is about determining when an item should be preferred to
+% another. When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be
+% broken up into sample points
+% $\{ (x_{i, j_1}, x_{i, j_2}, y_{i, j_1}, y_{i, j_2}) \}_{j_1, j_2 \in [1, n_i]: j_1 \neq j_2}$.
+% Suitable losses can be based on max-margin
+% principles~\cite{ranking-with-large-margin-principle} or 
+% some probability model of $\Pr[\text{$x_1$ is ranked higher than $x_2$}]$,
+% e.g. KL-divergence~\cite{ranknet}. 
+% A listwise loss is about determining the full ranking directly. Suitable losses
+% may also be based on probabilistic models, but of
+% $\Pr[\sigma \mid y = (y_{i,1} \ldots y_{i, n_i})]$ and/or
+% $\Pr[\sigma \mid s = (s_{i,1} \ldots s_{i, n_i})]$~\cite{listmle, listnet}.
+% Pairwise and listwise approaches outperform pointwise approaches, intuitively
+% because they exploit structure in the samples. For this reason, 
+% we focus on pairwise and listwise approaches, and review consistency results
+% and algorithms for binary relevance, NDCG and PD losses in the following
+% sections.
+% =======
+There are many surrogates that are used in practice that are non-convex. In such cases, one has to analyze the consistency and also the computational complexity of emprical loss minimization. Some of the surrogates used in practice are proven to be consistent whereas some are proven to be inconsistent. There are a few practical approaches for which there are no consistency results giving oppurtunity for further work in this area. The surrogates for some the looss functions studied can be classified as pointwise, pairwise and listwise. We do not categorize the surrogates presented in this article. More infrmation can be found in \cite{li2011short}.
+% >>>>>>> Changes to Introduction
 
-It is thus important to find good surrogate losses for these true losses, in
-particular ones that can be optimized efficiently for and are statistically
-consistent.
-Surrogates can be classified into being pointwise, pairwise,
-or listwise~\cite{ir-survey}.
-Pointwise surrogates are those of the form
-\begin{align*}
-  \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
-\end{align*}
-for some $\phi'$, i.e., the loss decomposes over individual objects. 
-Pairwise surrogates are those of the form
-\begin{align*}
-  \phi(\vec{s}, y)
-  &\stackrel{\Delta}{=}
-  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
-  \phi(\vec{s}, G)
-  &\stackrel{\Delta}{=}
-  \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
-\end{align*}
-for some $\phi'$,
-i.e., the loss decomposes over pairs. Listwise surrogates are
-like the true losses, and do not decompose easily like the other two.
-From their forms, pointwise surrogates apply to
-relevance labels (binary or not), while pairwise and listwise surrogates
-apply to all three forms of labels.
+% Some common measures and losses are:
+% \begin{itemize}
+% \item Precision: For binary relevance labels, 
+%   \begin{align*}
+%     \text{AvgPrec}@K(\sigma, (y_j)_{j=1}^n)
+%     = \frac{1}{K} \sum_{r=1}^K \text{Prec}@r(\sigma, (y_j)_{j=1}^n)
+%     = \frac{1}{K} \sum_{r=1}^K \frac{\sum_{j : \sigma(j) \leq r} y_j}{r}.
+%   \end{align*}
+%   Precision at $r$ is the proportion of relevant documents among those 
+%   ranked up to $r$ according to $\sigma$. Average precision is the
+%   non-truncated version of this measure, and mean average precision (MAP)
+%   averages \text{AvgPrec} over all queries in a set, i.e.
+%   \begin{align*}
+%     \text{MAP}(\sigma, ((y_j)_{j=1}^{n_i})_{i=1}^m) =
+%     \frac{1}{m} \sum_{i=1}^m \text{AvgPrec}(\sigma, (y_j)_{j=1}^{n_i}).
+%   \end{align*}
+% \item Normalized Discounted Cumulative Gain (NDCG): For relevance scores,
+%   the discounted cumulative gain at $K$ is 
+%   \begin{align*}
+%     \text{DCG}@K(\sigma, (y_j)_{j=1}^n)
+%     = \sum_{r=1}^K \frac{G(y_{\sigma^{-1}(r)})}{D(r)}
+%     = \sum_{i: \sigma(i) \leq K} \frac{G(y_i)}{D(\sigma(i))}.
+%   \end{align*}
+%   (The first sum runs over positions and the second sum runs over
+%   object indices.) The gain function $G$ boosts relevance scores, and is
+%   normally taken to be $G(y) = 2^y - 1$. The discount function $D$ discounts
+%   the importance of the term based on the position of the item, and is
+%   normally taken to be $D(\sigma(i)) = \log(1 + \sigma(i))$. As before, DCG
+%   is the non-truncated version of this, and NDCG normalizes DCG to obtain
+%   a number in $[0,1]$, defined as
+%   \begin{align*}
+%     \text{NDCG}(\sigma, (y_j)_{j=1}^n)
+%     = \frac{1}{N((y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n),
+%   \end{align*}
+%   where
+%   \begin{align*}
+%     N((y_j)_{j=1}^n)
+%     = \frac{1}{\max_{\sigma'} DCG(\sigma', (y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n).
+%   \end{align*}
+%   In many applications, it is more important for the output to rank well for
+%   items that are near the top compared to ones below, and to rank well for
+%   highly relevant items compared to those with low scores; NDCG factors
+%   these in using the discount and gain functions respectively.
+% 
+% \item Weighted pairwise disgreement loss: For preference graphs, the most
+%   natural loss to define is just:
+%   \begin{align*}
+%     \ell_{\text{PD}}(\sigma, G)
+%     = \sum_{j,k: j \neq k} w_{j,k}^G \1[\sigma(j) > \sigma(k)]
+%   \end{align*}
+%   Here the sum is over object indices, and we can take $w_{j,k}^G = 0$ if
+%   the edge $j \to k$ is not in $G$. 
+% \end{itemize}
+% Note that while the pairwise disagreement (PD) loss is natural for preference
+% graphs, and preference graphs generalize relevance scores, PD loss is not
+% directly related to NDCG.
+% 
+% The ranking problem is difficult because the search
+% space is exponentially large, and the ranking measures and losses are
+% sensitive only to changes in rank and are hence flat or discontinuous
+% everywhere (in the output of $h_S$). This makes it difficult to optimize
+% using standard means like gradient descent. 
+% 
+% It is thus important to find good surrogate losses for these true losses, in
+% particular ones that can be optimized efficiently for and are statistically
+% consistent. For the rest of this report, we review consistency results and
+% algorithms for NDCG and PD loss. 
+% 
+% A side note: since permutations are somewhat awkward, a common method is for
+% the algorithm to output a scoring function  
+% $h_S: \bigcup_{n=1}^\infty \X^n \to \mathbb{R}^n$ instead of a function returning
+% permutations, and then sort with ties broken in some way. In the sequel,
+% we switch presentation between scores $\vec{s}$ and permutations $\sigma$
+% as appropriate, e.g., the measures above may be in terms of scores
+% instead of $\sigma$.
 
-Beyond their distinct forms, the more salient point is that they exemplify
-different approaches to the problem.
-A pointwise loss is about determining the rank of an item directly.
-When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be broken up
-into sample points $\{(x_{i, j}, y_{i, j})\}_{j=1}^{n_i}$, and the loss may be
-minimized using techniques from ordinal regression~\cite{}.
-A pairwise loss is about determining when an item should be preferred to
-another. When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be
-broken up into sample points
-$\{ (x_{i, j_1}, x_{i, j_2}, y_{i, j_1}, y_{i, j_2}) \}_{j_1, j_2 \in [1, n_i]: j_1 \neq j_2}$.
-Suitable losses can be based on max-margin
-principles~\cite{ranking-with-large-margin-principle} or 
-some probability model of $\Pr[\text{$x_1$ is ranked higher than $x_2$}]$,
-e.g. KL-divergence~\cite{ranknet}. 
-A listwise loss is about determining the full ranking directly. Suitable losses
-may also be based on probabilistic models, but of
-$\Pr[\sigma \mid y = (y_{i,1} \ldots y_{i, n_i})]$ and/or
-$\Pr[\sigma \mid s = (s_{i,1} \ldots s_{i, n_i})]$~\cite{listmle, listnet}.
-Pairwise and listwise approaches outperform pointwise approaches, intuitively
-because they exploit structure in the samples. For this reason, 
-we focus on pairwise and listwise approaches, and review consistency results
-and algorithms for binary relevance, NDCG and PD losses in the following
-sections.
+% <<<<<<< 58d79c7bd0f1085a68d48fe8cf3a1c80e21a7fe6
+% The rest of the paper is organized as follows.
+% =======
+% Surrogates can be classified into being pointwise, pairwise, or
+% listwise~\cite{ir-survey}.
+% Pointwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
+% \end{align*}
+% for some $\phi'$, i.e., the loss decomposes over individual objects. 
+% Pairwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, \text{sign}(y_j - y_k)) \\
+%   \phi(\vec{s}, G)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+% \end{align*}
+% for some $\phi'$,
+% i.e., the loss decomposes over pairs. Listwise surrogates are
+% like the true losses, and do not decompose easily like the other two.
+% From their forms, pointwise surrogates apply to
+% relevance labels (binary or not), while pairwise and listwise surrogates
+% apply to all three forms of labels. Beyond their distinct forms, the more
+% salient point is that they exemplify different learning models: a pointwise
+% loss determines how a feature vector should be scored; a pairwise
+% loss determines how a pair should be scored (positively or negatively), and
+% hence induces a ranking 
+% 
+% \begin{align*}
+%   f_S(\vec{x}) = \text{sort}(h_S(\vec{x})) \\
+%   \ell(f_S(\vec{x}), y) = \ell(\text{sort}(h_S(\vec{x})), y)
+% \end{align*}
+% where ties are broken in some way. But the presence of \text{sort} and the 
+% But optimizing these ranking measures and losses directly is difficult
+% because the losses are 
+% 
+% Solving the ranking problem directly is difficult because the set of
+% permutations is exponentially large. 
+% 
+% Indeed, several attempts to solve the ranking problem treated
+% it in terms of classification and regression; 
 
-A side note: since permutations are somewhat awkward, a common method is for
-the algorithm to output a scoring function  
-$h_S: \bigcup_{n=1}^\infty \X^n \to \mathbb{R}^n$ instead of a function returning
-permutations, and then sort with ties broken in some way. In the sequel,
-we switch presentation between scores $\vec{s}$ and permutations $\sigma$
-as appropriate, e.g., the measures above may be in terms of scores
-instead of $\sigma$.
-
-The rest of the paper is organized as follows.
+The rest of the report is organized as follows.
+In Section~\ref{sec:loss0-1} we look at the standard 0-1 loss on permutations.
+>>>>>>> Changes to Introduction
 In Section~\ref{sec:binary-relevance}, we consider surrogates for losses
 defined for binary relevance labels.
 In Section~\ref{sec:ndcg}, we consider surrogates for NDCG.

@@ -1,0 +1,13 @@
+\section{Subset Ranking}\label{sec:binary-relevance}
+Binary relevance, also known as subset ranking, is the case where the true labels are subsets of $[n]$, i.e., $\Y = \{0,1\}^n$. There are various loss functions in this setting most of which are low rank meaning that the loss function $\ell:\Yh \times \Y \to \R_+$ when viewed as a $|\Yh|\times|\Y|$ matrix has small rank. Hence the quadratic surrogate loss for low rank losses defined in \cite{ramaswamy2013convex} can be applied directly to get consistent algorithms for these problems. Here, we look at a few important loss functions.
+
+\subsection{Precision@$q$}
+The precision@$q$ loss is a measure of how (im)precise the prediction is, with respect to the true label when we look at the prediction $\sigma$ as a map from $[n] \to \{0,1\}$ which sends the top $q$ positions to $1$ and the rest to $0$. More precisely, the loss $\ell_{P@q}: \{0,1\}^n \times S_n\to \R_+$ is defined by,
+$$\ell_{P@q}(\sigma,\y) = 1 - \frac{1}{q}\sum_{i:\sigma(i)\leq q}y_i$$
+A consistent surrogate loss $\psi_{P@q}:\R^n \times \Y \to \R_+$ and its corresponding prediction mapping $\pred_{P@q}:\R^n \to S_n$ are given by:
+$$\psi_{P@q}(\u,\y) = \lVert \u - \y \rVert_2^2$$
+$$\pred_{P@q}(\u) = \argmax_{\sigma\in S_n}\sum_{i:\sigma(i)\leq q}u_i$$
+In this case, the prediction mapping just amounts to sorting the indices in decreasing order of the $\u$ values. 
+
+\subsection{MAP}
+The mean average precision, as the name suggests, is one minus the avergae of precision at 
