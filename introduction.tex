@@ -153,8 +153,53 @@ using standard means like gradient descent.
 
 It is thus important to find good surrogate losses for these true losses, in
 particular ones that can be optimized efficiently for and are statistically
-consistent. For the rest of this report, we review consistency results and
-algorithms for NDCG and PD loss. 
+consistent.
+Surrogates can be classified into being pointwise, pairwise,
+or listwise~\cite{ir-survey}.
+Pointwise surrogates are those of the form
+\begin{align*}
+  \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
+\end{align*}
+for some $\phi'$, i.e., the loss decomposes over individual objects. 
+Pairwise surrogates are those of the form
+\begin{align*}
+  \phi(\vec{s}, y)
+  &\stackrel{\Delta}{=}
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
+  \phi(\vec{s}, G)
+  &\stackrel{\Delta}{=}
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+\end{align*}
+for some $\phi'$,
+i.e., the loss decomposes over pairs. Listwise surrogates are
+like the true losses, and do not decompose easily like the other two.
+From their forms, pointwise surrogates apply to
+relevance labels (binary or not), while pairwise and listwise surrogates
+apply to all three forms of labels.
+
+Beyond their distinct forms, the more salient point is that they exemplify
+different approaches to the problem.
+A pointwise loss is about determining the rank of an item directly.
+When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be broken up
+into sample points $\{(x_{i, j}, y_{i, j})\}_{j=1}^{n_i}$, and the loss may be
+minimized using techniques from ordinal regression~\cite{}.
+A pairwise loss is about determining when an item should be preferred to
+another. When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be
+broken up into sample points
+$\{ (x_{i, j_1}, x_{i, j_2}, y_{i, j_1}, y_{i, j_2}) \}_{j_1, j_2 \in [1, n_i]: j_1 \neq j_2}$.
+Suitable losses can be based on max-margin
+principles~\cite{ranking-with-large-margin-principle} or 
+some probability model of $\Pr[\text{$x_1$ is ranked higher than $x_2$}]$,
+e.g. KL-divergence~\cite{ranknet}. 
+A listwise loss is about determining the full ranking directly. Suitable losses
+may also be based on probabilistic models, but of
+$\Pr[\sigma \mid y = (y_{i,1} \ldots y_{i, n_i})]$ and/or
+$\Pr[\sigma \mid s = (s_{i,1} \ldots s_{i, n_i})]$~\cite{listmle, listnet}.
+Pairwise and listwise approaches outperform pointwise approaches, intuitively
+because they exploit structure in the samples. For this reason, 
+we focus on pairwise and listwise approaches, and review consistency results
+and algorithms for binary relevance, NDCG and PD losses in the following
+sections.
 
 A side note: since permutations are somewhat awkward, a common method is for
 the algorithm to output a scoring function  
@@ -163,47 +208,6 @@ permutations, and then sort with ties broken in some way. In the sequel,
 we switch presentation between scores $\vec{s}$ and permutations $\sigma$
 as appropriate, e.g., the measures above may be in terms of scores
 instead of $\sigma$.
-
-% Surrogates can be classified into being pointwise, pairwise, or
-% listwise~\cite{ir-survey}.
-% Pointwise surrogates are those of the form
-% \begin{align*}
-%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
-% \end{align*}
-% for some $\phi'$, i.e., the loss decomposes over individual objects. 
-% Pairwise surrogates are those of the form
-% \begin{align*}
-%   \phi(\vec{s}, y)
-%   &\stackrel{\Delta}{=}
-%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, \text{sign}(y_j - y_k)) \\
-%   \phi(\vec{s}, G)
-%   &\stackrel{\Delta}{=}
-%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
-% \end{align*}
-% for some $\phi'$,
-% i.e., the loss decomposes over pairs. Listwise surrogates are
-% like the true losses, and do not decompose easily like the other two.
-% From their forms, pointwise surrogates apply to
-% relevance labels (binary or not), while pairwise and listwise surrogates
-% apply to all three forms of labels. Beyond their distinct forms, the more
-% salient point is that they exemplify different learning models: a pointwise
-% loss determines how a feature vector should be scored; a pairwise
-% loss determines how a pair should be scored (positively or negatively), and
-% hence induces a ranking 
-% 
-% \begin{align*}
-%   f_S(\vec{x}) = \text{sort}(h_S(\vec{x})) \\
-%   \ell(f_S(\vec{x}), y) = \ell(\text{sort}(h_S(\vec{x})), y)
-% \end{align*}
-% where ties are broken in some way. But the presence of \text{sort} and the 
-% But optimizing these ranking measures and losses directly is difficult
-% because the losses are 
-% 
-% Solving the ranking problem directly is difficult because the set of
-% permutations is exponentially large. 
-% 
-% Indeed, several attempts to solve the ranking problem treated
-% it in terms of classification and regression; 
 
 The rest of the paper is organized as follows.
 In Section~\ref{sec:binary-relevance}, we consider surrogates for losses
