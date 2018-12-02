@@ -81,8 +81,8 @@ $\ell: \Yh \times \Y \to \R_+$. The goal is to minimize the $\ell$-risk
 \begin{align*}
   \err_D^\ell[f_S] = \E_{(\vec{X}, Y) \sim D} [\ell(f_S(\vec{X}), Y)],
 \end{align*}
-for all distributions $D$ on $(\bigcup_{n=1}^\infty X^n) \times \Y$, or sometimes,
-for distributions within some suitable class.
+for all distributions $D$ on $(\bigcup_{n=1}^\infty X^n) \times \Y$
+within some suitable class.
 The notions of Bayes $\ell$-risk, conditional $\ell$-risk,
 Bayes conditional $\ell$-risk, $\ell$-regret, and $\ell$-consistency of the
 learning algorithm can all be defined similarly to binary classification
@@ -135,24 +135,78 @@ Some common measures and losses are:
 \item Weighted pairwise disgreement loss: For preference graphs, the most
   natural loss to define is just:
   \begin{align*}
-    \ell(\sigma, G)
+    \ell_{\text{PD}}(\sigma, G)
     = \sum_{j,k: j \neq k} w_{j,k}^G \1[\sigma(j) > \sigma(k)]
   \end{align*}
   Here the sum is over object indices, and we can take $w_{j,k}^G = 0$ if
   the edge $j \to k$ is not in $G$. 
 \end{itemize}
-It is common for the algorithm to output a scoring function 
-$f_S: \bigcup_{n=1}^\infty \X^n \to \mathbb{R}^n$ instead of a function returning
-permutations, so that standard optimization can be used; a permutation can
-then be obtained by sorting scores and breaking ties in some way.
-Even so, optimizing these ranking measures and losses directly is difficult
-because the functions 
+Note that while the pairwise disagreement (PD) loss is natural for preference
+graphs, and preference graphs generalize relevance scores, PD loss is not
+directly related to NDCG.
 
-Solving the ranking problem directly is difficult because the set of
-permutations is exponentially large. 
+The ranking problem is difficult because the search
+space is exponentially large, and the ranking measures and losses are
+sensitive only to changes in rank and are hence flat or discontinuous
+everywhere (in the output of $h_S$). This makes it difficult to optimize
+using standard means like gradient descent. 
 
-Indeed, several attempts to solve the ranking problem treated
-it in terms of classification and regression; 
+It is thus important to find good surrogate losses for these true losses, in
+particular ones that can be optimized efficiently for and are statistically
+consistent. For the rest of this report, we review consistency results and
+algorithms for NDCG and PD loss. 
 
-The rest of the paper is organized as follows. In Section~\ref{sec:ndcg},
-we 
+A side note: since permutations are somewhat awkward, a common method is for
+the algorithm to output a scoring function  
+$h_S: \bigcup_{n=1}^\infty \X^n \to \mathbb{R}^n$ instead of a function returning
+permutations, and then sort with ties broken in some way. In the sequel,
+we switch presentation between scores $\vec{s}$ and permutations $\sigma$
+as appropriate, e.g., the measures above may be in terms of scores
+instead of $\sigma$.
+
+% Surrogates can be classified into being pointwise, pairwise, or
+% listwise~\cite{ir-survey}.
+% Pointwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
+% \end{align*}
+% for some $\phi'$, i.e., the loss decomposes over individual objects. 
+% Pairwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, \text{sign}(y_j - y_k)) \\
+%   \phi(\vec{s}, G)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+% \end{align*}
+% for some $\phi'$,
+% i.e., the loss decomposes over pairs. Listwise surrogates are
+% like the true losses, and do not decompose easily like the other two.
+% From their forms, pointwise surrogates apply to
+% relevance labels (binary or not), while pairwise and listwise surrogates
+% apply to all three forms of labels. Beyond their distinct forms, the more
+% salient point is that they exemplify different learning models: a pointwise
+% loss determines how a feature vector should be scored; a pairwise
+% loss determines how a pair should be scored (positively or negatively), and
+% hence induces a ranking 
+% 
+% \begin{align*}
+%   f_S(\vec{x}) = \text{sort}(h_S(\vec{x})) \\
+%   \ell(f_S(\vec{x}), y) = \ell(\text{sort}(h_S(\vec{x})), y)
+% \end{align*}
+% where ties are broken in some way. But the presence of \text{sort} and the 
+% But optimizing these ranking measures and losses directly is difficult
+% because the losses are 
+% 
+% Solving the ranking problem directly is difficult because the set of
+% permutations is exponentially large. 
+% 
+% Indeed, several attempts to solve the ranking problem treated
+% it in terms of classification and regression; 
+
+The rest of the paper is organized as follows.
+In Section~\ref{sec:binary-relevance}, we consider surrogates for losses
+defined for binary relevance labels.
+In Section~\ref{sec:ndcg}, we consider surrogates for NDCG.
+In Section~\ref{sec:pd}, we consider surrogates for PD loss.
