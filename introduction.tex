@@ -81,13 +81,16 @@ $\ell: \Yh \times \Y \to \R_+$. The goal is to minimize the $\ell$-risk
 \begin{align*}
   \err_D^\ell[f_S] = \E_{({X}, Y) \sim D} [\ell(f_S({X}), Y)],
 \end{align*}
-for some unknown distribution $D$ on $\X \times \Y$ from which the samples are drawn i.i.d.
-The Bayes $\ell$-risk for a given distribution $D$ is the minimum possible $\ell$-risk, denoted $\err^{l,*}_D = \inf_{f:\X \to \Yh} \err^l_D[f]$. A learning algorithm is said to be $\ell$-consistent if for any distribution $D$,
-$$\err_D^l[f_S] \xrightarrow{\Pr} \err_D^{l,*}$$
-\begin{center}
- as
-\end{center}
-$$m \to \infty$$
+for some unknown distribution $D$ on $\X \times \Y$ from which the samples
+are drawn i.i.d.
+The Bayes $\ell$-risk for a given distribution $D$ is the minimum possible
+$\ell$-risk, denoted $\err^{l,*}_D = \inf_{f:\X \to \Yh} \err^l_D[f]$.
+A learning algorithm is said to be $\ell$-consistent if for any distribution $D$,
+\begin{align*}
+  \err_D^l[f_S] \xrightarrow{\Pr} \err_D^{l,*}
+  \quad \text{as} \quad
+  m \to \infty,
+\end{align*}
 where $m = |S|$ is the sample size and the probability is over samples $S$ of
 size $m$ which is drawn i.i.d. from $D$. Typically, minimizing the empirical
 loss $\sum_{i=i}^m \ell(f(\x_i),y_i)$ over some suitable function class $\F_m$
@@ -118,11 +121,10 @@ complexity of emprical loss minimization. Some of the surrogates used in
 practice are proven to be consistent whereas some are proven to be
 inconsistent. There are a few practical approaches for which there are no
 consistency results giving oppurtunity for further work in this area.
-The surrogates for some the looss functions studied can be classified as
+The surrogates for some the loss functions studied can be classified as
 pointwise, pairwise and listwise. We do not categorize the surrogates
 presented in this article. More information can be found in \cite{li2011short}.
 
-<<<<<<< Updated upstream
 % Some common measures and losses are:
 % \begin{itemize}
 % \item Precision: For binary relevance labels, 
