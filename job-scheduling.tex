@@ -40,15 +40,17 @@ A way to do this is as follows. For $n$ items, let
   \}.
 \end{align*}
 The label space is $\Y = \bigcup_{n=1}^\infty \Y_n$. We interpret each $c_i$
-to be the unit cost incurred for scheduling a task past round $i$.
+to be the cost incurred for scheduling one task past round $i$.
 
 The loss $\ell$ can then be defined as:
 \begin{align*}
   \ell(f, (G, \vec{c}))
-  = \sum_{i,j: i \neq j} w_{i,j}^G \1_{f(i) \geq f(j)}
-  + \sum_{i=1}^n c_i \sum_{j=1}^n \1_{f(j) \geq i}
+  = \sum_{j,k: j \neq k} w_{j,k}^G \1_{f(j) \geq f(k)}
+  + \sum_{l=1}^n c_l \sum_{j=1}^n \1_{f(j) \geq l}
 \end{align*}
+In~\cite{shivani-low-rank}, 
 
-
+\subsection{Minimizing Resource Consumption}
+Here, we want the scoring function to allocate 
 
 
