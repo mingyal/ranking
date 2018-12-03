@@ -43,6 +43,10 @@ the result does not imply consistency.
 Moreover, such a surrogate is pointwise, in the sense
 that training is done on individual objects $(x_j, y_j)$, and does not
 exploit potential structure in the problem.
+%In~\cite{ndcg-consistency}, it was shown
+%that the normalization factor in NDCG has to be incorporated into the
+%surrogate loss in order to be consistent -- the main result is that the
+%minimizer of a surrogate loss has to 
 
 In what is termed the pairwise approach, the surrogate loss
 $\phi(\vec{s}, y)$ decomposes over pairs of objects rather than single objects
@@ -86,35 +90,20 @@ RankNet uses the probabilistic models
 Work in~\cite{ranking-measures-and-loss-functions} showed that Ranking SVM,
 RankBoost, and RankNet all minimize $1 - \text{NDCG}(\vec{s}, y)$, but
 Xia et.\ al.\ showed that Ranking SVM and RankBoost are in fact inconsistent,
-even under the low-noise assumption~\cite{xia2008listwise}. 
+even under the low-noise assumption~\cite{xia2008listwise}.
 
-In the listwise approach, the structure of the entire 
+Importantly, RankNet minimizes the loss by doing gradient descent, which is
+essentially about improving the ranking model in an appropriate way. Considering
+that NDCG places more weight on doing well near the top of the list compared to
+below, one may design a heuristic gradient that places more weight on improving
+performance near the top. This is the idea behind LambdaRank~\cite{lambda-rank},
+which scales the gradient in RankNet by the change in NDCG. 
+According to a recent cross-benchmark survey of ranking
+algorithms~\cite{cross-benchmark}, LambdaRank-inspired algorithms are
+state-of-the-art. Unfortunately, the loss function behind this heuristic
+gradient was implicit and hence not well-understood for some time, until recent
+work this year makes this loss explicit using a probabilistic model~\cite{cikm}.
+However, it is still unclear whether this surrogate is consistent; this is an
+avenue for future research. 
 
-Empirical comparisons also show that pointwise
-surrogates like these, where training is done on individual objects, are less
-accurate than pairwise and listwise surrogates; a pairwise surrogate is of the
-form
-\begin{align*}
-  \phi(\vec{s}, y)
-  &\stackrel{\Delta}{=}
-  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
-  \phi(\vec{s}, G)
-  &\stackrel{\Delta}{=}
-  \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
-\end{align*}
-for some $\phi'$, i.e., the loss decomposes over pairs.
-
-Moreover, this surrogate is a pointwise surrogate;
-when training on this loss, 
-
-
-
-Subsequent work showed that
-direct regression works~\cite{ndcg-consistency}: 
-
-The idea of making function output and labels similar
-also lies behind using cosine similarity~\cite{rank-cosine}, 
-However, 
-
-
-\subsection{LambdaRank}
+TODO: ListNet.
