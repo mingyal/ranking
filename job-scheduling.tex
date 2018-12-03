@@ -126,24 +126,26 @@ cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathc
 \end{equation}
 \end{itemize}
 
+	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{Ramaswamy2013}, \cite{duchi2010}, and then plug in $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
+	
+	Note: lowest target loss is achieved  because $cost$ non-decreasing after each clustering, and $c_{cur}$ is decreasing after each clustering. That is to say, once $c_{cur}-cost$ is negative, we will incur more loss by any kind of clustering.
+
 \begin{algorithm}[H]
-	\caption{Naive algorithm( under unique total ranking and low.noise assumptions )}
+	\caption{Naive algorithm}
 	\begin{algorithmic}[1]
-		\Procedure{Clustering ranking }{$\mathcal{G}, \mathbf{p}, \mathbf{c}$}
-		\State Derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{Ramaswamy2013}, \cite{duchi2010}
-		\State $m=\sigma^*$
-		\State Let initialized $cur=r$
+		\Procedure{Clustering ranking }{$\mathcal{G}, \mathbf{p}, \mathbf{c}, \sigma$}
+		\State Initialize $cur=r$
 		\For{\texttt{$i\in[r-1]$}}
 		\State
 		Let $cost=\text{min}_{i\in [|m|-1]} cost^m_{i, i+1}$
 		\State 
 		Let $cl = \text{argmin}_{i\in [|m|-1]} cost^m_{i, i+1}$
 		\If{$cost\leq c_{cur}$}
-		\State Merge clusters $cl$ and $cl+1$. That is, set $m^{-1}(cl)\leftarrow m^{-1}(cl)\cup m^{-1}(cl+1)$; set $m^{-1}(cl+i)\leftarrow m^{-1}(cl+i+1)$ for $i\geq 1$; and set $|m|\leftarrow |m|-1$.
+		\State Merge clusters $cl$ and $cl+1$. That is, 
+		set $m^{-1}(cl)\leftarrow m^{-1}(cl)\cup m^{-1}(cl+1)$; set $m^{-1}(cl+i)\leftarrow m^{-1}(cl+i+1)$ for $i\geq 1$; and set $|m|\leftarrow |m|-1$.
+		\State $cur\leftarrow cur-1$
 		\Else\quad
 			break; 
-		
-		
 		\EndIf		
 		\EndFor
 		\State \textbf{return} $m$
@@ -156,7 +158,7 @@ The last thing we should worry is that when there are more than $1$ permutation 
 \includegraphics[scale=0.5]{figure/eg1.png}
 	\end{center}
 \end{figure}
-The total ranking is not unique. $\sigma_1=(1,2,3,4,5)$ or $\sigma_2=(1,2,4,3,5)$ both minimize pd loss, but will have different solution in our case. Whether $\sigma_1$ or $\sigma_2$ got outputed depends on $(\mathcal{G}, \mathbf{p})$. If we utilize surrogates from Theorem 6 from Shivani, 
+The total ranking is not unique. $\sigma_1=(1,2,3,4,5)$ or $\sigma_2=(1,2,4,3,5)$ both minimize pd loss, but will have different solution in our case. Whether $\sigma_1$ or $\sigma_2$ got outputed depends on $(\mathcal{G}, \mathbf{p})$. If we utilize surrogates from Theorem 6 from \cite{ramaswamy2013convex}, 
 \begin{equation}
 \begin{split}
 u_2=-y_{12}^{\mathbf{p}}+y_{24}^{\mathbf{p}}\\
@@ -175,7 +177,28 @@ where according to the graph, $y_{21}^{\mathbf{p}}, y_{42}^{\mathbf{p}}, y_{41}^
 
 Although $\sigma_1, \sigma_2$ are equivalent w.r.t pdloss, it is not for our case. Let $c_1=0, c_2=c_3=c_4=c_5=1$. Then if we start from $\sigma_1$, the best $m_1=(1,\{2,3\}, \{4,5\})$ and from $\sigma_2$, the best $m_2=(1,2,\{3,4\}, 5)$. However $m_1$ have smaller target loss. 
 
-To solve this issue, we must go through all possible total ordering...
+To solve this issue, we must go through all possible total ordering. That is, if we have all topological sorting of difference graph, we can run Algorithm 1 on each of them to find out the lowest target loss. Thanks to Theorem 7 of \cite{ramaswamy2013convex}, we will have a calibrated surrogates which will also give us all possible total ordering.
+
+\begin{algorithm}[H]
+	\caption{Improved algorithm}
+	\begin{algorithmic}[1]
+		\Procedure{xxx }{$\mathcal{G}, \mathbf{p}, \mathbf{c}$}
+		\State Get $\mathcal{M}$ from Algorithm $1$ from \cite{ramaswamy2013convex}
+		\State Let $m^*=NULL$, $loss = \infty$
+		\For{\texttt{$\sigma\in\mathcal{M}$}}
+		\State
+		Let $m=${Clustering ranking }{($\mathcal{G}, \mathbf{p}, \mathbf{c}, \sigma$)}, with $l$ be the corresponding loss.
+		\If{\texttt{$l\leq loss$}}
+		Set $m^*=m$
+		\EndIf
+		\EndFor
+		\State \textbf{return} $m^*$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+Warning: this algorithm only works under the assumption that $\mathcal{M}$ is small. If $\mathcal{M}$ is huge, then it would be hard to solve the problem quickly. Consider a DAG over $r$ items($r$ is even), with edges $\{(i,i+1)\}_{i=1}^{r/2}\cup \{(i,i+1)\}_{r/2+1}^r$. Then $|\mathcal{M}|=(\frac{r}{2}+1)!$.
+
 
 
 
