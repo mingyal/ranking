@@ -31,26 +31,154 @@ $\Yh = \{f: \bigcup_{i=1}^n \X^n \to \mathbb{Z}_+\}$,
 i.e.\ functions which stratifies jobs into rounds. This is no different from
 functions that output relevance scores.
 
-\subsubsection{Minimizing Job Completion Time}
+\subsubsection{Minimizing Job Completion Time and Parallel Processing Cost?}
 Here, we want the scoring function to output as few rounds as possible.
-A way to do this is as follows. For $n$ items, let
+A way to do this is as follows. For $r$ items, let
 \begin{align*}
-  \Y_n &= \{ (G, \vec{c})
-  \mid \text{$G$ is a weighted DAG on $[n]$ and $\vec{c} = c_1, \ldots, c_n$}
+  \Y_r &= \{ (G, \vec{c})
+  \mid \text{$G$ is a weighted DAG on $[r]$ and $\vec{c} =( c_1, \ldots, c_r), c_1\leq ...\leq c_r$}
   \}.
 \end{align*}
-The label space is $\Y = \bigcup_{n=1}^\infty \Y_n$. We interpret each $c_i$
-to be the cost incurred for scheduling one task past round $i$.
+The label space is $\Y = \Y_r$ is a set of finite number of weighted DAGs over $r$ items. We interpret each $c_i$
+to be the unit cost incurred for scheduling a task past round $i$.  The prediction space $\mathcal{T}$ has size $r^r$
 
 The loss $\ell$ can then be defined as:
 \begin{align*}
   \ell(f, (G, \vec{c}))
-  = \sum_{j,k: j \neq k} w_{j,k}^G \1_{f(j) \geq f(k)}
-  + \sum_{l=1}^n c_l \sum_{j=1}^n \1_{f(j) \geq l}
+  = \sum_{i,j: i \neq j} w_{i,j}^G \1_{f(i) \geq f(j)}
+  + \sum_{i=1}^n c_i \sum_{j=1}^n \1_{f(j) \geq i}
 \end{align*}
-In~\cite{shivani-low-rank}, 
 
-\subsection{Minimizing Resource Consumption}
-Here, we want the scoring function to allocate 
+\textcolor{red}{Mingyang: The loss defined below eq(1) is easier to analyze and have the same property to penalize depth.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Mingyang's draft for Minimizing Job Completion Time}
+
+
+\begin{equation}\label{eq:pdloss}
+\begin{split}
+%\text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i\big(\sum_{j=1}^r1_{\{m(j)\geq i\}}\big)=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} 
+\text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} 
+\end{split}
+\end{equation}
+, where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{Ramaswamy2013}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
+\begin{equation}
+\begin{split}
+\psi_l^*((\mathbf{y},\mathbf{c}), (\mathbf{u}, \mathbf{v}))=\sum\limits_{i\not=j}^{r}(u_{ij}-y_{ij})^2+\sum\limits_{k=1}^r(v_k-c_i)^2,\quad \text{pred}_l^*(\mathbf{u}, \mathbf{v})\in\text{argmin}_{m\in \mathcal{T}}\bigg(\mathbf{u}'\mathbf{\Phi}_1(m)+\mathbf{v}'\mathbf{\Phi}_2(m)\bigg)
+\end{split}
+\end{equation}
+It is easy to see that solving $\text{pred}_l^*$ is same as solving original PD-loss problem. 
+
+
+
+Let $m^*: [n]\rightarrow [n]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. We notice that $m$ must satisfies the below two rules.
+\begin{itemize}
+	\item Fact1(no gap): For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
+	\begin{itemize}
+		\item If there exists such a $k$, then we can move all the items ranked lower than $k$ w.r.t $m$ by one level, i.e, set $m'(l)=m(l)-1, \forall l, m(l)>k$. We can reduce the target loss by $c_{|m|}>0$, which contradicts that $m$ is optimal.
+	\end{itemize}
+	\item Fact2(respect DAG): If there exists edge $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$, then $m(k)\leq m(l)$.
+	\begin{itemize}
+		\item If not, then there exists,  $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$ but $m(k)>m(l)$, we let $m'(s)=\begin{cases}
+		m(s)&\quad{s\not=k,l}\\
+		m(l)&\quad{s=k}\\
+		m(k)&\quad{s=l}
+		\end{cases}$. Since $|m|$ does not change, we only need to pay attention to the pd loss part. When $k>l$ \begin{equation}
+		\begin{split}
+		&E[l((\mathbf{y},\mathbf{c}),  m)-l((\mathbf{y},\mathbf{c}),  m')]\\
+		=&y_{kl}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(k)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(l)\}}\\
+		&-\bigg(y_{lk}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(l)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(k)\}}\bigg)\\
+		=&0
+		\end{split}
+		\end{equation}
+		, because $m(k)>m(l)\Rightarrow 1_{\{m(k)\geq v\}}-1_{\{m(l)\geq v\}}\geq 0$ for any $v\in \mathbb{R}$. This ineq contradicts with the optimality of $m$. 
+	\end{itemize}
+\end{itemize}
+\iffalse
+The above two facts imply that $m$ must  will not have no gap(fact $1$); and $m$ must respect the ranking from DAG cluster-wise(fact $2$). For the cluster-wise,  we mean that for any two items $k,l$ falling into different clusters, that is, $m(k)\not=m(l)$, then we need to rank $k$ before $l$ if there is a edge with weight $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$; however if two items falling into same cluster, then $m$ do not need to respect the ranking from DAG.
+\fi
+
+\begin{lemma}
+	The optimal $m^*\in\mathcal{M}$, where any element of $\mathcal{M}$ satisfies Fact2.
+\end{lemma}
+
+Note that if there is a \underline{unique} total order $\sigma^*$, then $|\mathcal{M}|\{\sigma^*\}$, and $m$ can be derived from by clustering items in $m^*_{pd}$. This motivates us a naive algorithm for deriving $m^*$. Basically, we start from $\sigma^*$, and find the best way to cluster items, that is, reduce the target loss by 
+$$\textbf{ Increase SMALL loss (from $\mathbf{y}$)by clustering, but decrease BIG loss (from $\mathbf{c}$) by smaller depth }$$
+
+We also notice that minimizing eq(\ref{eq:pdloss}) is equivalent to minimize the following quantity:
+	\begin{equation}
+	\text{argmin}_ml((\mathbf{y},\mathbf{c}),  m)= \text{argmin}_m\sum\limits_{i=1}^r\sum\limits_{j=1}^{i-1}(y_{ij}-y_{ji})1_{\{m(i)> m(j)\}}+\sum\limits_{i=1}^r\sum\limits_{j=1}^{i-1}y_{ij}1_{\{m(i)= m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}\\
+	\end{equation} 
+
+Before we present first algorithm, we start from some notations. For any $m\in \mathcal{M}$, by fact1, we know $m^{-1}(i)\not=\emptyset$ for $i\leq |m|$. 
+\begin{itemize}
+	\item Let $\mathcal{C}^m=\{  \{m^{-1}(i)\}_{i=1}^{|m|}     \}$ be set of clusters of $m$
+	\begin{itemize}
+		\item $\mathcal{C}^m[i]= \{m^{-1}(i)\}$ is set of items in cluster $i$ under $m$
+		\item Note that $\sigma^*$ has $r$ clusters, and each has one  and only one item.
+	\end{itemize}
+\item Let cost of merging cluster $i$ and $i+1$ under $m$ be \begin{equation}
+\begin{split}
+cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathcal{C}^m[i+1]}\bigg(-(y_{n_1n_2}^\mathbf{p}-y_{n_2n_1}^\mathbf{p})1_{n_1>n_2}+y_{n_1n_2}^\mathbf{p}1_{n_1>n_2}+y_{n_2n_1}^\mathbf{p}1_{n_2>n_1}\bigg)\\
+&= \sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathcal{C}^m[i+1]}y_{n_2n_1}^\mathbf{p}
+\end{split}
+\end{equation}
+\end{itemize}
+
+\begin{algorithm}[H]
+	\caption{Naive algorithm( under unique total ranking and low.noise assumptions )}
+	\begin{algorithmic}[1]
+		\Procedure{Clustering ranking }{$\mathcal{G}, \mathbf{p}, \mathbf{c}$}
+		\State Derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{Ramaswamy2013}, \cite{duchi2010}
+		\State $m=\sigma^*$
+		\State Let initialized $cur=r$
+		\For{\texttt{$i\in[r-1]$}}
+		\State
+		Let $cost=\text{min}_{i\in [|m|-1]} cost^m_{i, i+1}$
+		\State 
+		Let $cl = \text{argmin}_{i\in [|m|-1]} cost^m_{i, i+1}$
+		\If{$cost\leq c_{cur}$}
+		\State Merge clusters $cl$ and $cl+1$. That is, set $m^{-1}(cl)\leftarrow m^{-1}(cl)\cup m^{-1}(cl+1)$; set $m^{-1}(cl+i)\leftarrow m^{-1}(cl+i+1)$ for $i\geq 1$; and set $|m|\leftarrow |m|-1$.
+		\Else\quad
+			break; 
+		
+		
+		\EndIf		
+		\EndFor
+		\State \textbf{return} $m$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+The last thing we should worry is that when there are more than $1$ permutation make pd loss be $0$, but the first step will only output one of them, whether other unoutputed permutation will achieve lower target loss?  Let's look at an example.
+\begin{figure}[h]
+	\begin{center}
+\includegraphics[scale=0.5]{figure/eg1.png}
+	\end{center}
+\end{figure}
+The total ranking is not unique. $\sigma_1=(1,2,3,4,5)$ or $\sigma_2=(1,2,4,3,5)$ both minimize pd loss, but will have different solution in our case. Whether $\sigma_1$ or $\sigma_2$ got outputed depends on $(\mathcal{G}, \mathbf{p})$. If we utilize surrogates from Theorem 6 from Shivani, 
+\begin{equation}
+\begin{split}
+u_2=-y_{12}^{\mathbf{p}}+y_{24}^{\mathbf{p}}\\
+u_3 = -y_{13}^{\mathbf{p}}+y_{35}^{\mathbf{p}}\\
+u_4 = -y_{24}^{\mathbf{p}}-y_{14}^{\mathbf{p}}\\
+u_5 = -y_{35}^{\mathbf{p}}-y_{15}^{\mathbf{p}}\\
+\end{split}
+\end{equation}
+where according to the graph, $y_{21}^{\mathbf{p}}, y_{42}^{\mathbf{p}}, y_{41}^{\mathbf{p}}, y_{31}^{\mathbf{p}}, y_{51}^{\mathbf{p}}, y_{53}^{\mathbf{p}}=0$. It is easily to see that
+\begin{equation}
+\begin{split}
+\{y_{12}=100, y_{24}^{\mathbf{p}}=100, y_{13}^{\mathbf{p}}=100, y_{35}^{\mathbf{p}}=99, y_{14}^{\mathbf{p}}=200, y_{15}^{\mathbf{p}}=300\}\Rightarrow \sigma_1\\
+\{y_{12}=100, y_{24}^{\mathbf{p}}=100, y_{13}^{\mathbf{p}}=400, y_{35}^{\mathbf{p}}=99, y_{14}^{\mathbf{p}}=200, y_{15}^{\mathbf{p}}=499\}\Rightarrow \sigma_2
+\end{split}
+\end{equation}
+
+Although $\sigma_1, \sigma_2$ are equivalent w.r.t pdloss, it is not for our case. Let $c_1=0, c_2=c_3=c_4=c_5=1$. Then if we start from $\sigma_1$, the best $m_1=(1,\{2,3\}, \{4,5\})$ and from $\sigma_2$, the best $m_2=(1,2,\{3,4\}, 5)$. However $m_1$ have smaller target loss. 
+
+To solve this issue, we must go through all possible total ordering...
+
+
+
+
 
 
