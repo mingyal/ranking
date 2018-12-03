@@ -32,7 +32,7 @@ If the algorithm is to output a scoring function and has access to relevance
 scores as labels, perhaps the simplest idea is to minimize similarity between
 the function output and labels; when they are equal, the NCDG is also one.
 In~\cite{bayes-optimal-subset-ranking}, it was
-established that regression works: minimizing the least-squares
+established that regression works, in the sense that minimizing the least-squares
 surrogate
 \begin{align*}
   \phi(\vec{s}, y) = \sum_{j=1}^n {(s_j - y_j)}^2
@@ -50,17 +50,43 @@ as above:
 \begin{align*}
   \phi(\vec{s}, y)
   &\stackrel{\Delta}{=}
-  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
-  \phi(\vec{s}, G)
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, \text{sign}(y_j - y_k)) 
 \end{align*}
-for some $\phi'$. The pairwise approach attempts to reduce the problem of
-ranking to the problem of determining when an object should be preferred over
-another. Some choices of surrogate include the hinge loss, 
+for some $\phi'$.
+The pairwise approach attempts to reduce the problem of
+ranking to the problem of classifying a pair as $\pm 1$ (i.e.,
+when an object should be preferred over another). Some choices of $\phi'$
+are the hinge loss of Ranking SVM~\cite{ranksvm}
+($\phi'(s, y) = \1_{y < 0}(1 - s)_+$),
+exponential loss of RankBoost~\cite{rankboost},
+and the logistic loss of RankNet~\cite{}.
+It is instructive to review how the logistic loss of RankNet is derived.
+First, formulate a probabilistic model for the probability
+of a pair $(x_j, x_k)$ receiving the label $+1$, based on the function's
+output. Then think of the labels $\text{sign}(y_j - y_k)$
+for this pair as coming from the underlying distribution that we are learning.
+We want the distribution induced by the function's output to be similar to the
+underlying distribution, so it makes sense to take $\phi'$ as the KL-divergence
+\begin{align*}
+  \phi'(s_j - s_k, \text{sign}(y_j - y_k))
+  = \text{KL}(\Pr[\text{$(x_j, x_k)$ has label $1$} ; s_j - s_k], \Pr[\text{$(x_j, x_k)$ has label $1$} ; \text{sign}(y_j - y_k)]).
+\end{align*}
+RankNet uses the probabilistic models
+\begin{align*}
+  \Pr[\text{$(x_j, x_k)$ has label $+1$}; s_j - s_k] &= \frac{1}{1 + e^{-(s_j - s_k)}} \\
+  \Pr[\text{$(x_j, x_k)$ has label $+1$} ; \text{sign}(y_j - y_k)] &=
+  \begin{cases}
+    1 & \text{sign}(y_j - y_k) = 1 \\
+    \frac{1}{2} & \text{sign}(y_j - y_k) = 0 \\
+    0 & \text{sign}(y_j - y_k) = -1
+  \end{cases}
+\end{align*}
+(The latter can be changed to a proportion over the training set.)
 
-So a starting point is to define
-a probabilistic model for $\Pr[x_j \to x_k]$, i.e.\ the probability that $x_j$
-should be ranked higher than $x_k$. RankNet~\ref{ranknet} is a major
-representative 
+Work in~\cite{ranking-measures-and-loss-functions} showed that Ranking SVM,
+RankBoost, and RankNet all minimize $1 - \text{NDCG}(\vec{s}, y)$, but
+Xia et.\ al.\ showed that Ranking SVM and RankBoost are in fact inconsistent,
+even under the low-noise assumption~\cite{xia2008listwise}. 
 
 In the listwise approach, the structure of the entire 
 
