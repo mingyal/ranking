@@ -36,7 +36,7 @@ Here, we want the scoring function to output as few rounds as possible.
 A way to do this is as follows. For $r$ items, let
 \begin{align*}
   \Y_r &= \{ (G, \vec{c})
-  \mid \text{$G$ is a weighted DAG on $[r]$ and $\vec{c} =( c_1, \ldots, c_r), c_1\leq ...\leq c_r$}
+  \mid \text{$G$ is a weighted DAG on $[r]$ and $\vec{c} =( c_1, \ldots, c_r), c_1< ...< c_r$}
   \}.
 \end{align*}
 The label space is $\Y = \Y_r$ is a set of finite number of weighted DAGs over $r$ items. We interpret each $c_i$
@@ -63,16 +63,16 @@ The loss $\ell$ can then be defined as:
 \end{split}
 \end{equation}
 , where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{Ramaswamy2013}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
-\begin{equation}
+\begin{equation*}
 \begin{split}
 \psi_l^*((\mathbf{y},\mathbf{c}), (\mathbf{u}, \mathbf{v}))=\sum\limits_{i\not=j}^{r}(u_{ij}-y_{ij})^2+\sum\limits_{k=1}^r(v_k-c_i)^2,\quad \text{pred}_l^*(\mathbf{u}, \mathbf{v})\in\text{argmin}_{m\in \mathcal{T}}\bigg(\mathbf{u}'\mathbf{\Phi}_1(m)+\mathbf{v}'\mathbf{\Phi}_2(m)\bigg)
 \end{split}
-\end{equation}
+\end{equation*}
 It is easy to see that solving $\text{pred}_l^*$ is same as solving original PD-loss problem. 
 
 
 
-Let $m^*: [n]\rightarrow [n]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. We notice that $m$ must satisfies the below two rules.
+Let $m^*: [r]\rightarrow [r]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. We notice that $m$ must satisfies the below two rules.
 \begin{itemize}
 	\item Fact1(no gap): For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
 	\begin{itemize}
@@ -84,14 +84,14 @@ Let $m^*: [n]\rightarrow [n]$ be the optimal solution of eq(\ref{eq:pdloss}), an
 		m(s)&\quad{s\not=k,l}\\
 		m(l)&\quad{s=k}\\
 		m(k)&\quad{s=l}
-		\end{cases}$. Since $|m|$ does not change, we only need to pay attention to the pd loss part. When $k>l$ \begin{equation}
+		\end{cases}$. Since $|m|$ does not change, we only need to pay attention to the pd loss part. When $k>l$ \begin{equation*}
 		\begin{split}
 		&E[l((\mathbf{y},\mathbf{c}),  m)-l((\mathbf{y},\mathbf{c}),  m')]\\
 		=&y_{kl}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(k)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(l)\}}\\
 		&-\bigg(y_{lk}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(l)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(k)\}}\bigg)\\
-		=&0
+		>&0
 		\end{split}
-		\end{equation}
+		\end{equation*}
 		, because $m(k)>m(l)\Rightarrow 1_{\{m(k)\geq v\}}-1_{\{m(l)\geq v\}}\geq 0$ for any $v\in \mathbb{R}$. This ineq contradicts with the optimality of $m$. 
 	\end{itemize}
 \end{itemize}
@@ -100,16 +100,16 @@ The above two facts imply that $m$ must  will not have no gap(fact $1$); and $m$
 \fi
 
 \begin{lemma}
-	The optimal $m^*\in\mathcal{M}$, where any element of $\mathcal{M}$ satisfies Fact2.
+	The optimal $m^*\in\mathcal{M}$, where  $\mathcal{M}$ is a set containing all elements satisfying Fact2.
 \end{lemma}
 
-Note that if there is a \underline{unique} total order $\sigma^*$, then $|\mathcal{M}|\{\sigma^*\}$, and $m$ can be derived from by clustering items in $m^*_{pd}$. This motivates us a naive algorithm for deriving $m^*$. Basically, we start from $\sigma^*$, and find the best way to cluster items, that is, reduce the target loss by 
+Note that if there is a \underline{unique} total order $\sigma^*$, then $\mathcal{M}=\{\sigma^*\}$, and $m$ can be derived by clustering items in $m^*_{pd}$. This motivates us a naive algorithm for deriving $m^*$. Basically, we start from $\sigma^*$, and find the best way to cluster items, that is, reduce the target loss by 
 $$\textbf{ Increase SMALL loss (from $\mathbf{y}$)by clustering, but decrease BIG loss (from $\mathbf{c}$) by smaller depth }$$
 
 We also notice that minimizing eq(\ref{eq:pdloss}) is equivalent to minimize the following quantity:
-	\begin{equation}
+	\begin{equation*}
 	\text{argmin}_ml((\mathbf{y},\mathbf{c}),  m)= \text{argmin}_m\sum\limits_{i=1}^r\sum\limits_{j=1}^{i-1}(y_{ij}-y_{ji})1_{\{m(i)> m(j)\}}+\sum\limits_{i=1}^r\sum\limits_{j=1}^{i-1}y_{ij}1_{\{m(i)= m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}\\
-	\end{equation} 
+	\end{equation*} 
 
 Before we present first algorithm, we start from some notations. For any $m\in \mathcal{M}$, by fact1, we know $m^{-1}(i)\not=\emptyset$ for $i\leq |m|$. 
 \begin{itemize}
@@ -118,17 +118,23 @@ Before we present first algorithm, we start from some notations. For any $m\in \
 		\item $\mathcal{C}^m[i]= \{m^{-1}(i)\}$ is set of items in cluster $i$ under $m$
 		\item Note that $\sigma^*$ has $r$ clusters, and each has one  and only one item.
 	\end{itemize}
-\item Let cost of merging cluster $i$ and $i+1$ under $m$ be \begin{equation}
+\item Let cost of merging cluster $i$ and $i+1$ under $m$ be \begin{equation}\label{eq:cost}
 \begin{split}
-cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathcal{C}^m[i+1]}\bigg(-(y_{n_1n_2}^\mathbf{p}-y_{n_2n_1}^\mathbf{p})1_{n_1>n_2}+y_{n_1n_2}^\mathbf{p}1_{n_1>n_2}+y_{n_2n_1}^\mathbf{p}1_{n_2>n_1}\bigg)\\
-&= \sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathcal{C}^m[i+1]}y_{n_2n_1}^\mathbf{p}
+cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathcal{C}^m[i+1]}\bigg(-(y_{n_1n_2}^\mathbf{p}-y_{n_2n_1}^\mathbf{p})1_{n_1>n_2}1_{\{m(n_1)> m(n_2)\}}+y_{n_1n_2}^\mathbf{p}1_{n_1>n_2}+y_{n_2n_1}^\mathbf{p}1_{n_2>n_1}\bigg)\\
 \end{split}
 \end{equation}
+, where each summand is non-negative.
 \end{itemize}
 
-	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{Ramaswamy2013}, \cite{duchi2010}, and then plug in $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
+	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{ramaswamy2013convex}, \cite{duchi2011}, and then plug $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
 	
-	Note: lowest target loss is achieved  because $cost$ non-decreasing after each clustering, and $c_{cur}$ is decreasing after each clustering. That is to say, once $c_{cur}-cost$ is negative, we will incur more loss by any kind of clustering.
+	\begin{lemma}
+	Given $m$,  define $cost=\text{min}_{i\in [|m|-1]} cost^m_{i, i+1}$. $cost$ is non-decreasing after each clustering.
+	\end{lemma}
+\begin{proof}
+	Consider we have $m$, and then we cluster $i, i+1$ to have $m'$. We need to show $\text{min}_{l\in [|m|-1]} cost^m_{l, l+1}\leq \text{min}_{l'\in [|m'|-1]} cost^{m'}_{l', l'+1}$. Notice that $cost^m_{l, l+1}=cost^{m'}_{l', l'+1}$ for $l=l'+1$ and $l\not= i, i+1$. Also $cost^m_{i-1, i}\leq cost^{m'}_{i-1, i}$ because now there are more items in $i$-th cluster under $m'$ and each summand  of eq(\ref{eq:cost}) is non-negative. Same reason for $cost^m_{i, i+1}\leq cost^{m'}_{i, i+1}$. 
+	\end{proof}
+Thanks to the fact that $c_i$ is strictly increasing, this lemma implies once $c_{cur}-cost$ is negative, any kind of clustering in the future will increase target loss. This justifies the stopping condition in the algorithm. 
 
 \begin{algorithm}[H]
 	\caption{Naive algorithm}
@@ -152,28 +158,28 @@ cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathc
 		\EndProcedure
 	\end{algorithmic}
 \end{algorithm}
-The last thing we should worry is that when there are more than $1$ permutation make pd loss be $0$, but the first step will only output one of them, whether other unoutputed permutation will achieve lower target loss?  Let's look at an example.
+The last thing we should worry is that when there are more than $1$ permutation achieve lowest pd loss. We should note that we may only derive one permutation from algorithm in \cite{ramaswamy2013convex}, so whether other unoutputed permutation will achieve lower target loss?  The answer is YES. Let's look at an example.
 \begin{figure}[h]
 	\begin{center}
 \includegraphics[scale=0.5]{figure/eg1.png}
 	\end{center}
 \end{figure}
 The total ranking is not unique. $\sigma_1=(1,2,3,4,5)$ or $\sigma_2=(1,2,4,3,5)$ both minimize pd loss, but will have different solution in our case. Whether $\sigma_1$ or $\sigma_2$ got outputed depends on $(\mathcal{G}, \mathbf{p})$. If we utilize surrogates from Theorem 6 from \cite{ramaswamy2013convex}, 
-\begin{equation}
+\begin{equation*}
 \begin{split}
 u_2=-y_{12}^{\mathbf{p}}+y_{24}^{\mathbf{p}}\\
 u_3 = -y_{13}^{\mathbf{p}}+y_{35}^{\mathbf{p}}\\
 u_4 = -y_{24}^{\mathbf{p}}-y_{14}^{\mathbf{p}}\\
 u_5 = -y_{35}^{\mathbf{p}}-y_{15}^{\mathbf{p}}\\
 \end{split}
-\end{equation}
+\end{equation*}
 where according to the graph, $y_{21}^{\mathbf{p}}, y_{42}^{\mathbf{p}}, y_{41}^{\mathbf{p}}, y_{31}^{\mathbf{p}}, y_{51}^{\mathbf{p}}, y_{53}^{\mathbf{p}}=0$. It is easily to see that
-\begin{equation}
+\begin{equation*}
 \begin{split}
 \{y_{12}=100, y_{24}^{\mathbf{p}}=100, y_{13}^{\mathbf{p}}=100, y_{35}^{\mathbf{p}}=99, y_{14}^{\mathbf{p}}=200, y_{15}^{\mathbf{p}}=300\}\Rightarrow \sigma_1\\
 \{y_{12}=100, y_{24}^{\mathbf{p}}=100, y_{13}^{\mathbf{p}}=400, y_{35}^{\mathbf{p}}=99, y_{14}^{\mathbf{p}}=200, y_{15}^{\mathbf{p}}=499\}\Rightarrow \sigma_2
 \end{split}
-\end{equation}
+\end{equation*}
 
 Although $\sigma_1, \sigma_2$ are equivalent w.r.t pdloss, it is not for our case. Let $c_1=0, c_2=c_3=c_4=c_5=1$. Then if we start from $\sigma_1$, the best $m_1=(1,\{2,3\}, \{4,5\})$ and from $\sigma_2$, the best $m_2=(1,2,\{3,4\}, 5)$. However $m_1$ have smaller target loss. 
 
