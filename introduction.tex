@@ -119,59 +119,15 @@ outputs $f_S = \pred \circ h_S$ on input $S$.
 
 Ramaswamy and Agarwal \cite{ramaswamy2016convex} showed that a property of surrogates called $\ell$-calibration is sufficient for consistency of general multiclass losses by extending the result for 0-1 loss in \cite{tewari2007consistency}. They also define the notion of Convex Calibration dimension which is the smallest $d$ for which there is a calibrated convex surrogate with a surrogate space $\C \subseteq \R^d$. For most ranking problems, this is bounded above by $n$ or $n^2$.  The work \cite{ramaswamy2013convex} on constructing convex calibrated surrogates for multiclass losses that are low rank, meaning that the loss function $\ell:\Yh \times \Y \to \R_+$ when viewed as a $|\Yh|\times|\Y|$ matrix has small rank, gives many applications to subset ranking. 
 
-% <<<<<<< 58d79c7bd0f1085a68d48fe8cf3a1c80e21a7fe6
-% It is thus important to find good surrogate losses for these true losses, in
-% particular ones that can be optimized efficiently for and are statistically
-% consistent.
-% Surrogates can be classified into being pointwise, pairwise,
-% or listwise~\cite{ir-survey}.
-% Pointwise surrogates are those of the form
-% \begin{align*}
-%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
-% \end{align*}
-% for some $\phi'$, i.e., the loss decomposes over individual objects. 
-% Pairwise surrogates are those of the form
-% \begin{align*}
-%   \phi(\vec{s}, y)
-%   &\stackrel{\Delta}{=}
-%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
-%   \phi(\vec{s}, G)
-%   &\stackrel{\Delta}{=}
-%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
-% \end{align*}
-% for some $\phi'$,
-% i.e., the loss decomposes over pairs. Listwise surrogates are
-% like the true losses, and do not decompose easily like the other two.
-% From their forms, pointwise surrogates apply to
-% relevance labels (binary or not), while pairwise and listwise surrogates
-% apply to all three forms of labels.
-% 
-% Beyond their distinct forms, the more salient point is that they exemplify
-% different approaches to the problem.
-% A pointwise loss is about determining the rank of an item directly.
-% When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be broken up
-% into sample points $\{(x_{i, j}, y_{i, j})\}_{j=1}^{n_i}$, and the loss may be
-% minimized using techniques from ordinal regression~\cite{}.
-% A pairwise loss is about determining when an item should be preferred to
-% another. When training, a sample point $((x_{i,j})_{j=1}^{n_i}, y_i)$ may be
-% broken up into sample points
-% $\{ (x_{i, j_1}, x_{i, j_2}, y_{i, j_1}, y_{i, j_2}) \}_{j_1, j_2 \in [1, n_i]: j_1 \neq j_2}$.
-% Suitable losses can be based on max-margin
-% principles~\cite{ranking-with-large-margin-principle} or 
-% some probability model of $\Pr[\text{$x_1$ is ranked higher than $x_2$}]$,
-% e.g. KL-divergence~\cite{ranknet}. 
-% A listwise loss is about determining the full ranking directly. Suitable losses
-% may also be based on probabilistic models, but of
-% $\Pr[\sigma \mid y = (y_{i,1} \ldots y_{i, n_i})]$ and/or
-% $\Pr[\sigma \mid s = (s_{i,1} \ldots s_{i, n_i})]$~\cite{listmle, listnet}.
-% Pairwise and listwise approaches outperform pointwise approaches, intuitively
-% because they exploit structure in the samples. For this reason, 
-% we focus on pairwise and listwise approaches, and review consistency results
-% and algorithms for binary relevance, NDCG and PD losses in the following
-% sections.
-% =======
-There are many surrogates that are used in practice that are non-convex. In such cases, one has to analyze the consistency and also the computational complexity of emprical loss minimization. Some of the surrogates used in practice are proven to be consistent whereas some are proven to be inconsistent. There are a few practical approaches for which there are no consistency results giving oppurtunity for further work in this area. The surrogates for some the looss functions studied can be classified as pointwise, pairwise or listwise. We do not categorize the surrogates presented in this article. More information can be found in \cite{li2011short}.
-% >>>>>>> Changes to Introduction
+There are many surrogates that are used in practice that are non-convex.
+In such cases, one has to analyze the consistency and also the computational
+complexity of empirical loss minimization. Some of the surrogates used in
+practice are proven to be consistent whereas some are proven to be
+inconsistent. There are a few practical approaches for which there are no
+consistency results giving opportunity for further work in this area.
+The surrogates for some of the loss functions studied can be classified as
+pointwise, pairwise and listwise. We do not categorize the surrogates
+presented in this article. More information can be found in \cite{li2011short}.
 
 % Some common measures and losses are:
 % \begin{itemize}
@@ -248,6 +204,32 @@ There are many surrogates that are used in practice that are non-convex. In such
 % we switch presentation between scores $\vec{s}$ and permutations $\sigma$
 % as appropriate, e.g., the measures above may be in terms of scores
 % instead of $\sigma$.
+
+% It is thus important to find good surrogate losses for these true losses, in
+% particular ones that can be optimized efficiently for and are statistically
+% consistent.
+% Surrogates can be classified into being pointwise, pairwise,
+% or listwise~\cite{ir-survey}.
+% Pointwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y) \stackrel{\Delta}{=} \sum_{j=1}^n \phi'(s_j, y_j)
+% \end{align*}
+% for some $\phi'$, i.e., the loss decomposes over individual objects. 
+% Pairwise surrogates are those of the form
+% \begin{align*}
+%   \phi(\vec{s}, y)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
+%   \phi(\vec{s}, G)
+%   &\stackrel{\Delta}{=}
+%   \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+% \end{align*}
+% for some $\phi'$,
+% i.e., the loss decomposes over pairs. Listwise surrogates are
+% like the true losses, and do not decompose easily like the other two.
+% From their forms, pointwise surrogates apply to
+% relevance labels (binary or not), while pairwise and listwise surrogates
+% apply to all three forms of labels.
 
 % Beyond their distinct forms, the more salient point is that they exemplify
 % different approaches to the problem.

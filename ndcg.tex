@@ -1,17 +1,94 @@
 \section{NDCG}
 \label{sec:ndcg}
+For relevance scores, the discounted cumulative gain at $K$ is 
+\begin{align*}
+  \text{DCG}@K(\sigma, (y_j)_{j=1}^n)
+  = \sum_{r=1}^K \frac{G(y_{\sigma^{-1}(r)})}{D(r)}
+  = \sum_{i: \sigma(i) \leq K} \frac{G(y_i)}{D(\sigma(i))}.
+\end{align*}
+(The first sum runs over positions and the second sum runs over
+object indices.) The gain function $G$ boosts relevance scores, and is
+normally taken to be $G(y) = 2^y - 1$. The discount function $D$ discounts
+the importance of the term based on the position of the item, and is
+normally taken to be $D(\sigma(i)) = \log(1 + \sigma(i))$. As before, DCG
+is the non-truncated version of this, and NDCG normalizes DCG to obtain
+a number in $[0,1]$, defined as
+\begin{align*}
+  \text{NDCG}(\sigma, (y_j)_{j=1}^n)
+  = \frac{1}{N((y_j)_{j=1}^n)} DCG(\sigma, (y_j)_{j=1}^n),
+\end{align*}
+where
+\begin{align*}
+  N(y) = N((y_j)_{j=1}^n)
+  = \frac{1}{\max_{\sigma'} \text{DCG}(\sigma', (y_j)_{j=1}^n)} \text{DCG}(\sigma, (y_j)_{j=1}^n)
+\end{align*}
+is the normalization factor. 
+In many applications, it is more important for the output to rank well for
+items that are near the top compared to ones below, and to rank well for
+highly relevant items compared to those with low scores; NDCG factors
+these in using the discount and gain functions respectively.
+
 If the algorithm is to output a scoring function and has access to relevance
 scores as labels, perhaps the simplest idea is to minimize similarity between
-the output and scores. In~\cite{bayes-optimal-subset-ranking}, it was
-established that minimizing the pointwise least-squares surrogate
+the function output and labels; when they are equal, the NCDG is also one.
+In~\cite{bayes-optimal-subset-ranking}, it was
+established that regression works: minimizing the least-squares
+surrogate
 \begin{align*}
   \phi(\vec{s}, y) = \sum_{j=1}^n {(s_j - y_j)}^2
 \end{align*}
 actually minimizes $1 - \text{NDCG}(\vec{s}, y)$ because we can upper bound
-the latter by some multiple of the former. But this upper bound is coarse,
-and the result also does not tell us if the surrogate is consistent. 
-Similar 
+the latter by some multiple of the former. But this upper bound is coarse, and
+the result does not imply consistency. 
+Moreover, such a surrogate is pointwise, in the sense
+that training is done on individual objects $(x_j, y_j)$, and does not
+exploit potential structure in the problem.
 
+In what is termed the pairwise approach, the surrogate loss
+$\phi(\vec{s}, y)$ decomposes over pairs of objects rather than single objects
+as above:
+\begin{align*}
+  \phi(\vec{s}, y)
+  &\stackrel{\Delta}{=}
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
+  \phi(\vec{s}, G)
+\end{align*}
+for some $\phi'$. The pairwise approach attempts to reduce the problem of
+ranking to the problem of determining when an object should be preferred over
+another. Some choices of surrogate include the hinge loss, 
+
+So a starting point is to define
+a probabilistic model for $\Pr[x_j \to x_k]$, i.e.\ the probability that $x_j$
+should be ranked higher than $x_k$. RankNet~\ref{ranknet} is a major
+representative 
+
+In the listwise approach, the structure of the entire 
+
+Empirical comparisons also show that pointwise
+surrogates like these, where training is done on individual objects, are less
+accurate than pairwise and listwise surrogates; a pairwise surrogate is of the
+form
+\begin{align*}
+  \phi(\vec{s}, y)
+  &\stackrel{\Delta}{=}
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, y_j - y_k) \\
+  \phi(\vec{s}, G)
+  &\stackrel{\Delta}{=}
+  \sum_{j,k : i \neq j} \phi'(s_j - s_k, w_{j,k}^G) 
+\end{align*}
+for some $\phi'$, i.e., the loss decomposes over pairs.
+
+Moreover, this surrogate is a pointwise surrogate;
+when training on this loss, 
+
+
+
+Subsequent work showed that
+direct regression works~\cite{ndcg-consistency}: 
+
+The idea of making function output and labels similar
+also lies behind using cosine similarity~\cite{rank-cosine}, 
+However, 
 
 
 \subsection{LambdaRank}
