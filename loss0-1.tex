@@ -1,1 +1,16 @@
 \section{0-1 Loss}\label{sec:loss0-1}
+In this section we consider permutations as true labels, i.e., $\Y = S_n$. A natural loss in this setting is the 0-1 loss $\ell_{\text{0-1}}:S_n \times S_n \to \R_+$ given by,
+$$\ell_{\text{0-1}}(\sigma,y) = \1(\sigma \neq y)$$
+The results from \cite{ramaswamy2016convex} and \cite{tewari2007consistency} imply that any convex surrogate that is $\ell_{\text{0-1}}$-consistent must have surrogate space of dimension at least $n!$. Xia et. al. 2008 \cite{xia2008listwise} showed that we can get convex, consistent, score based surrogates (surrogate space is $\R^n$) for the 0-1 loss if we make some reasonable assumptions on the underlying probability distribution $D$. For every $\x \in \X$, let $\p(\x)$ denote the probability distribution over $\Y$ given by $p_y(\x) = \Pr(Y = y \mid X = \x)$. As before, for any $y \in \Y$, $y(i)$ denotes the position of $i$ in the ranking.
+
+A distribution $D$ over $\X\times\Y$ is said to be order preserving with respect to a pair of positions $(i,j)$ at $\x \in \X$ if for all $y \in \Y$ such that $y(i) < y(j)$, we have $p_y(\x) > p_{\text{flip}(i,j,y)}(\x)$ where $\text{flip}(i,j,y)$ denotes the permutation derived from $y$ by flipping positions of $i$ and $j$. The technical condition assumed to prove consistency in \cite{xia2008listwise} is that for every $\x \in \X$, there is an ordering of indices $j_1,...,j_n$ such that $D$ is order preserving with respect to $(j_1,j_2),(j_2,j_3)$,..., and $(j_{n-1},j_n)$ at $\x$. With this restriction we have many consistent surrogates:
+\begin{itemize}
+ \item The likelihood loss is defined in terms of a probabilistic model with Markov-like assumptions. $\psi_{\text{like}}: \R^n \times S_n \to \R_+$ is given by,
+ $$\psi_{\text{like}}(\u,y) = -\log P(y \mid \u)$$
+ $$P(y \mid \u) = \prod_{i=1}^n\frac{\exp(u_{y(i)})}{\sum_{j=i}^n\exp(u_{y(j)})}$$
+ \item The cosine loss is parameterized by a strictly decreasing score function $g:[n] \to \R_+$. Given a permutation $y \in \Y$, let $\g(y)$ denote the vector $(g(y(1)),...,g(y(n)))^T$. The loss $\psi_{\cos}: \R^n \times S_n \to \R_+$ is given by,
+ $$\psi_{\cos}(\u,y) = 1 - \frac{\g(y)^T\u}{\lVert\g(y)\rVert_2\lVert\u\rVert_2}$$
+ \item The cross entropy loss is simply the KL divergence between the probablity distributions over $\Y$: $P(\cdot\mid\g(y))$ and $P(\cdot\mid\u)$ where $P$ is the same as in the likelihood loss and $\g$ is the same as in the cosine loss. More precisely $\psi_{\text{KL}}:\R^n\times S_n \to\R_+$ is defined by,
+ $$\psi_{\text{KL}}(\u,y) = -\sum_{y' \in \Y}P(y'\mid\g(y))\log\Big(\frac{P(y'\mid\u)}{P(y'\mid \g(y))}\Big)$$
+\end{itemize}
+All three losses share a common prediction map $\pred_{\text{0-1}}: \R^n \to S_n$ which on input a score vector $\u$ outputs a ranking according to decreasing order of the scores, breaking ties arbitrarily. These surrogate losses had been used in practical applications even before any consistency results were known for them. The cosine loss is the loss used in RankCosine whereas the cross entropy loss is used in ListNet. The cosine loss is non-convex while the other two surrogates are convex.
