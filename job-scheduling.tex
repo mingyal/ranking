@@ -55,6 +55,15 @@ The loss $\ell$ can then be defined as:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Mingyang's draft for Minimizing Job Completion Time}
 
+\iffalse
+Let consider $5$ items. The true permutation $\sigma^*: \sigma^*(i)=i$. If we have a mapping $m$ with $m(1)=1, m(2,4)=2, m(3,5)=3$, then it has a wrong ranking for pair $(3,4)$. Let $m'$ be the flip mapping. 
+\begin{itemize}
+	\item $l(m)=y_{24}+y_{42}+y_{35}+y_{53}+y_{34}$
+	\item $l(m')=y_{23}+y_{32}+y_{45}+y_{54}$
+\end{itemize}
+If $y_{34}=1, y_{43}=0$, which is the only edge in the difference, and $y_{24}=y_{42}=0,y_{35}=y_{53}=0$, $y_{23}=y_{32}=1, y_{45}=y_{54}=0$. Then $l(m)=1<l(m')=2$
+\fi
+
 
 \begin{equation}\label{eq:pdloss}
 \begin{split}
@@ -73,31 +82,84 @@ It is easy to see that solving $\text{pred}_l^*$ is same as solving original PD-
 
 
 Let $m^*: [r]\rightarrow [r]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. We notice that $m$ must satisfies the below two rules.
-\begin{itemize}
-	\item Fact1(no gap): For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
+\begin{lemma}
+	Fact1(no gap): For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
+\end{lemma}
+\begin{proof}
+If there exists such a $k$, then we can move all the items ranked lower than $k$ w.r.t $m$ by one level, i.e, set $m'(l)=m(l)-1, \forall l, m(l)>k$. We can reduce the target loss by $c_{|m|}>0$, which contradicts that $m$ is optimal.
+\end{proof}
+
+Before deriving the second fact, we first re-examine the target loss. The target loss can be written as three parts: pdloss, clusterloss, depthloss$$\sum\limits_{i\not=j}y_{ij}1_{\{m(i)> m(j)\}}+\sum\limits_{i\not=j}y_{ij}1_{\{m(i)= m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}$$
+
+\begin{assumption}
+	There is a unique total order $\sigma^*$. For any  $i\not=j $, wlog $m(i)<m(j)$
+	$$y_{ij}+y_{ji}\geq \sum\limits_{k\in \{l: \sigma^*(l)\in [m(i), m(j)]\}, l={(\sigma^*)}^{-1}(\sigma^*(k)+1)\}}y_{kl}+y_{lk}$$
+\end{assumption}
+It means under total ranking, clustering two nodes will incur strict bigger loss than sum of  clustering loss of any two items between them. 
+
+\begin{lemma}
+Fact2(respect DAG): If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$.
+\end{lemma}
+\begin{proof}
+	If not, then for $m$, there must exist two clusters which do not respect DAG. That is to say, for some $k<l$, and let the first cluster $C_1=\{i: m(i)=k\}$, the second $C_2=\{j:m(j)=l\}$, $\exists \text{ pair } (i,j)\in (C_1, C_2)$, $\sigma^*(i)>\sigma^*(j)$. Now consider $m'$ which flip all these pairs of $m$ until we can not find more such pairs. and keep the rest of clusters unchanged. When we cannot find more such pairs, let $C_{1,u}$ be items previously in $C_1$ and now still in $C_1$;   $C_{1, d}$ be items previously in $C_1$ but now in $C_2$;  et $C_{2,u}$ be items previously in $C_2$ but now in $C_1$;   $C_{2, d}$ be items previously in $C_2$ and now still in $C_2$. Since we only do flip pairs, $|C_{1,d}|=|C_{2,u}|$.
+	\begin{equation}
+	\begin{split}
+	&C_1=  C_{1,u}\cup C_{1,d}\\
+		&C_2=  C_{2,u}\cup C_{2,d}\\
+		&m: m(C_1)=k; m(C_2)=l\\
+		&m': m'(C_{1, u}\cup C_{2, u})=k; m'(C_{1,d}\cup C_{2, d})=l\\
+	\end{split}
+	\end{equation}
 	\begin{itemize}
-		\item If there exists such a $k$, then we can move all the items ranked lower than $k$ w.r.t $m$ by one level, i.e, set $m'(l)=m(l)-1, \forall l, m(l)>k$. We can reduce the target loss by $c_{|m|}>0$, which contradicts that $m$ is optimal.
-	\end{itemize}
-	\item Fact2(respect DAG): If there exists edge $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$, then $m(k)\leq m(l)$.
+		\item pdloss: $m'$ will have no greater pdloss than $m$, because $m'$ respect more ranking than $m$.
+		\item depthloss: $m$ and $m'$ have same depthloss.
+		\item clusteringloss: let $C_{cl}(m)$, $C_{cl}(m')$ be clusteringloss for $m, m'$
+		\begin{itemize}
+			\item $C_{cl}(m)=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, d}}(y_{ij}+y_{ji}) \bigg)+\bigg( \sum\limits_{i\in C_{2, u}, j\in C_{2, d}}(y_{ij}+y_{ij})\bigg)$
+						\item $C_{cl}(m')=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{2, u}}(y_{ij}+ y_{ij})\bigg)+\bigg( \sum\limits_{i\in C_{1, d}, j\in C_{2, d}}(y_{ij}+y_{ij})\bigg)$
+		\end{itemize}
+	By our flip rule, $\sigma^*(i)>\sigma^*(j)$ for any $i\in C_{1,d}\cup C_{2,d}, j\in C_{2,u}\cup C_{1,u}$. If not, the fliping process will not stop. Since the first big bracket is same for $m$ and $m'$, we only work on the rest two. For any $i\in C_{1,u}$, $j\in C_{2,d}, k\in C_{2,u}, l\in C_{1,d} $, There are four possibilities:
 	\begin{itemize}
-		\item If not, then there exists,  $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$ but $m(k)>m(l)$, we let $m'(s)=\begin{cases}
-		m(s)&\quad{s\not=k,l}\\
-		m(l)&\quad{s=k}\\
-		m(k)&\quad{s=l}
-		\end{cases}$. Since $|m|$ does not change, we only need to pay attention to the pd loss part. When $k>l$ \begin{equation*}
-		\begin{split}
-		&E[l((\mathbf{y},\mathbf{c}),  m)-l((\mathbf{y},\mathbf{c}),  m')]\\
-		=&y_{kl}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(k)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(l)\}}\\
-		&-\bigg(y_{lk}^\mathbf{p}+\sum\limits_{j\not=l}y_{kj}^\mathbf{p}1_{\{m(l)\geq m(j)\}}+\sum\limits_{i\not=k}y_{il}^\mathbf{p}1_{\{m(i)\geq m(k)\}}\bigg)\\
-		>&0
-		\end{split}
-		\end{equation*}
-		, because $m(k)>m(l)\Rightarrow 1_{\{m(k)\geq v\}}-1_{\{m(l)\geq v\}}\geq 0$ for any $v\in \mathbb{R}$. This ineq contradicts with the optimality of $m$. 
+		\item $\sigma^*(k)<\sigma^*(i)<\sigma^*(j)<\sigma^*(l)$
+			\item $\sigma^*(k)<\sigma^*(i)<\sigma^*(l)<\sigma^*(j)$
+				\item $\sigma^*(i)<\sigma^*(k)<\sigma^*(j)<\sigma^*(l)$
+					\item $\sigma^*(i)<\sigma^*(k)<\sigma^*(l)<\sigma^*(j)$
 	\end{itemize}
-\end{itemize}
-\iffalse
-The above two facts imply that $m$ must  will not have no gap(fact $1$); and $m$ must respect the ranking from DAG cluster-wise(fact $2$). For the cluster-wise,  we mean that for any two items $k,l$ falling into different clusters, that is, $m(k)\not=m(l)$, then we need to rank $k$ before $l$ if there is a edge with weight $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>0$; however if two items falling into same cluster, then $m$ do not need to respect the ranking from DAG.
-\fi
+For the first case
+\begin{equation*}
+\begin{split}
+(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{ij}+y_{ji}+y_{jl}+y_{li}) + (y_{ki}+y_{ik}+y_{ij}+y_{ji})\\
+&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+\end{split}
+\end{equation*}
+For the second case
+\begin{equation*}
+\begin{split}
+(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{il}+y_{li}) + (y_{ki}+y_{ik}+y_{ij}+y_{ji}+y_{lj}+y_{jl})\\
+&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+\end{split}
+\end{equation*}
+For the third case
+\begin{equation*}
+\begin{split}
+(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq(y_{kj}+y_{jk}) + (y_{ki}+y_{ik}+y_{kj}+y_{jk}+y_{lj}+y_{jl})\\
+&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+\end{split}
+\end{equation*}
+For the fourth case
+\begin{equation*}
+\begin{split}
+(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{kl}+y_{lk}+y_{jl}+y_{li}) + (y_{ki}+y_{ik}+y_{kl}+y_{lk})\\
+&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+\end{split}
+\end{equation*}
+	\end{itemize}
+
+Note that the above inequality is from unique ordering and low.noise condition, because for any $(i,j)$, wlog $m(i)<m(j)$, then $y_{ij}>y_{ji}\geq 0$, which implies $y_{ij}+y_{ji}>0$. Above calculation shows $C_{cl}(m)>C_{cl}(m')$ which contradicts optimality of $m$.
+	
+\end{proof}
+
+
 
 \begin{lemma}
 	The optimal $m^*\in\mathcal{M}$, where  $\mathcal{M}$ is a set containing all elements satisfying Fact2.
@@ -203,7 +265,10 @@ To solve this issue, we must go through all possible total ordering. That is, if
 	\end{algorithmic}
 \end{algorithm}
 
-Warning: this algorithm only works under the assumption that $\mathcal{M}$ is small. If $\mathcal{M}$ is huge, then it would be hard to solve the problem quickly. Consider a DAG over $r$ items($r$ is even), with edges $\{(i,i+1)\}_{i=1}^{r/2}\cup \{(i,i+1)\}_{r/2+1}^r$. Then $|\mathcal{M}|=(\frac{r}{2}+1)!$.
+Warning: this algorithm only works under the assumption that $\mathcal{M}$ is small. If $\mathcal{M}$ is huge, then it would be hard to solve the problem quickly. Consider a DAG over $r$ items($r$ is even), with edges $\{(i,i+1)\}_{i=1}^{r/2}\cup \{(i,i+1)\}_{r/2+1}^r$. Then $|\mathcal{M}|=(\frac{r}{2}+1)!$. 
+
+
+
 
 
 
