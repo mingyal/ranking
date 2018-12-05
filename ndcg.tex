@@ -97,7 +97,9 @@ Considering that NDCG places more weight on doing well near the top of the list
 compared to below, Burges et.\ al.\ adapted the gradient in the gradient descent
 used by RankNet to place more weight on improving performance for items near
 the top. This method is called LambdaRank, and has inspired a number of
-ranking algorithms that are now state-of-the-art~\cite{cross-benchmark}.
+ranking algorithms, such as LambdaMart~\cite{Burges2010ranknetlambdamart} and
+LambdaNeuralRank~\cite{papini2012neuralrank}
+that are now state-of-the-art~\cite{tax2015benchmark}.
 
 How these pairwise approaches relate to a ranking measure like NDCG in general
 is less clear than the pointwise case.
@@ -132,9 +134,10 @@ END MOVE.
 
 Without heuristics like the virtual gradient of RankNet, the pairwise approach
 does not incorporate bias towards the top. Hence
-in~\cite{from-pairwise-to-listwise}, Cao et.\ al.\ proposed the use of 
+in~\cite{cao2007-pairwiselistwise}, Cao et.\ al.\ proposed the use of 
 surrogates that is defined over the whole list of items and hence takes the
-whole structure into account -- this is termed the listwise approach.
+whole structure into account -- this is termed the listwise approach
+(POSSIBLY INCLUDE BACKPOINTER TO XIA HERE).
 In that work, like in RankNet, we use probability models, but this time of
 \begin{align*}
   &\Pr[\text{$(x_1, \ldots, x_n)$ is ordered according to $\sigma$} ; \vec{s}] \\
@@ -147,7 +150,7 @@ This method is called ListNet, and also ranks among the state-of-the-art in the
 cross-benchmark study. Similar ideas come up in other work, e.g.\ ListMLE
 uses just a model for 
 
-In~\cite{ndcg-consistency}, it was established that the normalization factor
+In~\cite{ravikumar2011ndcg}, it was established that the normalization factor
 in NDCG is crucial for consistency; the main result is that a surrogate is
 consistent iff for all $\X$-conditional distributions on relevance scores,
 the minimizer achieving the conditional surrogate risk
@@ -157,7 +160,8 @@ least-squares loss and ListNet mentioned above are both not consistent, because
 they do not use the right normalization; corrections to make them consistent
 were then proposed.
 
-Recent work this year addressed the implicit loss in LambdaRank~\cite{cikm}.
+Recent work this year addressed the implicit loss in
+LambdaRank~\cite{wang2018lambdaloss}.
 Generalizing the probability models above, they define a probability model for
 $\Pr[y \mid \vec{s}]$ as a mixture model, i.e.\
 \begin{align*}

@@ -12,7 +12,7 @@ Some metrics for choosing plans include makespan (time to finish executing
 the DAG) and resource consumption (e.g., to obtain fairness between queries).
 One challenge, however, is that available resources change with time,
 so an execution plan deemed optimal before execution can become sub-optimal
-during its lifetime~\cite{osdi-qoop}.
+during its lifetime~\cite{mahajan2018qoop}.
 
 With this as setting, one may consider learning a decision rule for
 scheduling tasks.
@@ -71,7 +71,7 @@ If $y_{34}=1, y_{43}=0$, which is the only edge in the difference, and $y_{24}=y
 \text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} 
 \end{split}
 \end{equation}
-, where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{Ramaswamy2013}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
+, where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{ramaswamy2013convex}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
 \begin{equation*}
 \begin{split}
 \psi_l^*((\mathbf{y},\mathbf{c}), (\mathbf{u}, \mathbf{v}))=\sum\limits_{i\not=j}^{r}(u_{ij}-y_{ij})^2+\sum\limits_{k=1}^r(v_k-c_i)^2,\quad \text{pred}_l^*(\mathbf{u}, \mathbf{v})\in\text{argmin}_{m\in \mathcal{T}}\bigg(\mathbf{u}'\mathbf{\Phi}_1(m)+\mathbf{v}'\mathbf{\Phi}_2(m)\bigg)
@@ -188,7 +188,7 @@ cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathc
 , where each summand is non-negative.
 \end{itemize}
 
-	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{ramaswamy2013convex}, \cite{duchi2011}, and then plug $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
+	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{ramaswamy2013convex}, \cite{duchi2010ranking}, and then plug $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
 	
 	\begin{lemma}
 	Given $m$,  define $cost=\text{min}_{i\in [|m|-1]} cost^m_{i, i+1}$. $cost$ is non-decreasing after each clustering.

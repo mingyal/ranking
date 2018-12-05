@@ -20,7 +20,7 @@
 @article{li2011short,
   title={A short introduction to learning to rank},
   author={Li, Hang},
-  journal={IEICE TRANSACTIONS on Information and Systems},
+  journal={IEICE Transactions on Information and Systems},
   volume={94},
   number={10},
   pages={1854--1862},
@@ -48,8 +48,156 @@
 @inproceedings{xia2008listwise,
   title={Listwise approach to learning to rank: theory and algorithm},
   author={Xia, Fen and Liu, Tie-Yan and Wang, Jue and Zhang, Wensheng and Li, Hang},
-  booktitle={Proceedings of the 25th international conference on Machine learning},
+  booktitle={ICML},
   pages={1192--1199},
   year={2008},
   organization={ACM}
+}
+
+@incollection{chen2009rankingmeasures,
+title = {Ranking Measures and Loss Functions in Learning to Rank},
+author = {Chen, Wei and Tie-yan Liu and Yanyan Lan and Zhi-ming Ma and Li, Hang},
+booktitle = {Advances in Neural Information Processing Systems 22},
+editor = {Y. Bengio and D. Schuurmans and J. D. Lafferty and C. K. I. Williams and A. Culotta},
+pages = {315--323},
+year = {2009},
+publisher = {Curran Associates, Inc.},
+url = {http://papers.nips.cc/paper/3708-ranking-measures-and-loss-functions-in-learning-to-rank.pdf}
+}
+
+@ARTICLE{cossock2008subset,
+    author = {David Cossock and Tong Zhang},
+    title = {Statistical analysis of Bayes optimal subset ranking},
+    journal = {IEEE Transactions on Information Theory},
+    year = {2008}
+}
+
+@MISC{bm25,
+    author = {C S. Robertson and H. Zaragoza and Stephen Robertson and Hugo Zaragoza},
+    title = {The Probabilistic Relevance Framework: BM25 and Beyond},
+    year = {}
+}
+
+@Inproceedings{Herbrich99rankingsvm,
+  author = {Herbrich, R and Graepel, T and Obermayer, K},
+  title = {Large Margin Rank Boundaries for Ordinal Regression},
+  year = {2000},
+  URL = {http://stat.cs.tu-berlin.de/publications/papers/herobergrae99.ps.gz},
+  booktitle = {Advances in Large Margin Classifiers},
+  editor = {A.J. Smola and P.L. Bartlett and B. Sch{\"o}lkopf and     D. Schuurmans},
+  pages = {115-132},
+  publisher = {MIT Press},
+  address = {Cambridge, MA}
+}
+
+@MISC{Freund98rankboost,
+    author = {Yoav Freund and Raj Iyer and Robert E. Schapire and Yoram Singer},
+    title = {An Efficient Boosting Algorithm for Combining Preferences},
+    year = {1998}
+}
+
+@inproceedings{Burges2006lambdarank,
+  title={Learning to Rank with Nonsmooth Cost Functions},
+  author={Christopher J. C. Burges and Robert Ragno and Quoc V. Le},
+  booktitle={NIPS},
+  year={2006}
+}
+
+@INPROCEEDINGS{Burges05ranknet,
+    author = {Chris Burges and Tal Shaked and Erin Renshaw and Matt Deeds and Nicole Hamilton and Greg Hullender},
+    title = {Learning to rank using gradient descent},
+    booktitle = {ICML},
+    year = {2005},
+    pages = {89--96}
+}
+@inproceedings{duchi2010ranking,
+  author    = {John C. Duchi and
+               Lester W. Mackey and
+               Michael I. Jordan},
+  title     = {On the Consistency of Ranking Algorithms},
+  booktitle = {{ICML}},
+  pages     = {327--334},
+  publisher = {Omnipress},
+  year      = {2010}
+}
+
+@INPROCEEDINGS{cao2007-pairwiselistwise,
+    author = {Zhe Cao and Tao Qin and Tie-yan Liu and Hang Li},
+    title = {Learning to rank: from pairwise approach to listwise approach},
+    booktitle = {ICML},
+    year = {2007},
+    pages = {129--136},
+    publisher = {ACM Press}
+}
+
+@article{tax2015benchmark,
+  title={A cross-benchmark comparison of 87 learning to rank methods},
+  author={Niek Tax and Sander Bockting and Djoerd Hiemstra},
+  journal={Inf. Process. Manage.},
+  year={2015},
+  volume={51},
+  pages={757-772}
+}
+
+@inproceedings{papini2012neuralrank,
+  title={Learning-to-rank with prior knowledge as global constraints},
+  author={Papini, Tiziano and Diligenti, Michelangelo},
+  booktitle={Workshop on Combining Constraint Solving with Mining and Learning},
+  year={2012}
+}
+
+@techreport{Burges2010ranknetlambdamart,
+author = {Burges, Chris J.C.},
+title = {From RankNet to LambdaRank to LambdaMART: An Overview},
+institution = {Microsoft Research},
+year = {2010},
+month = {June},
+},
+url = {https://www.microsoft.com/en-us/research/publication/from-ranknet-to-lambdarank-to-lambdamart-an-overview/},
+}
+
+@InProceedings{ravikumar2011ndcg,
+  title = 	 {On NDCG Consistency of Listwise Ranking Methods},
+  author = 	 {Pradeep Ravikumar and Ambuj Tewari and Eunho Yang},
+  booktitle = 	 {Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics},
+  pages = 	 {618--626},
+  year = 	 {2011},
+  editor = 	 {Geoffrey Gordon and David Dunson and Miroslav Dudík},
+  volume = 	 {15},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {Fort Lauderdale, FL, USA},
+  month = 	 {11--13 Apr},
+  publisher = 	 {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v15/ravikumar11a/ravikumar11a.pdf},
+  url = 	 {http://proceedings.mlr.press/v15/ravikumar11a.html},
+}
+
+@inproceedings{wang2018lambdaloss,
+ author = {Wang, Xuanhui and Li, Cheng and Golbandi, Nadav and Bendersky, Michael and Najork, Marc},
+ title = {The LambdaLoss Framework for Ranking Metric Optimization},
+ booktitle = {Proceedings of the 27th ACM International Conference on Information and Knowledge Management},
+ series = {CIKM '18},
+ year = {2018},
+ isbn = {978-1-4503-6014-2},
+ location = {Torino, Italy},
+ pages = {1313--1322},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/3269206.3271784},
+ doi = {10.1145/3269206.3271784},
+ acmid = {3271784},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {lambdaloss, lambdarank, ranking metric optimization},
+}
+
+@inproceedings {mahajan2018qoop,
+author = {Kshiteej Mahajan and Mosharaf Chowdhury and Aditya Akella and Shuchi Chawla},
+title = {Dynamic Query Re-Planning using {QOOP}},
+booktitle = {13th {USENIX} Symposium on Operating Systems Design and Implementation ({OSDI} 18)},
+year = {2018},
+isbn = {978-1-931971-47-8},
+address = {Carlsbad, CA},
+pages = {253--267},
+url = {https://www.usenix.org/conference/osdi18/presentation/mahajan},
+publisher = {{USENIX} Association},
 }
