@@ -1,5 +1,24 @@
 \section{Pairwise Disagreement Loss}\label{sec:pdloss}
 
+
+In terms of consistency, Duchi et.\ al.~\cite{duchi2010ranking}
+studied the consistency of pairwise
+surrogates, and proved that a surrogate is consistent w.r.t. a
+loss $\ell(\sigma, G)$ that is sensitive only to changes in rank
+(e.g.\ PD loss and NDCG) iff it is $\ell$-calibrated (called edge-consistent
+in that paper). Using calibration, they showed that Ranking SVM and RankBoost
+are inconsistent w.r.t.\ PD loss, even under a low-noise assumption.
+However, empirical success of these pairwise surrogates led to another study
+that generalized edge-consistency/calibration to a condition they called
+rank-consistency.
+Roughly, a surrogate is rank-consistent if all its minimizers
+disagree with every non-minimizer of $\ell$ on some pair. Under a condition
+on distributions that they call rank-differentiability,
+similar to the low-noise condition, weighted pairwise surrogates are consistent
+w.r.t.\ PD loss. The surrogates of Ranking SVM, RankBoost, and RankNet, are
+all instances, and are hence consistent w.r.t.\ PD loss.
+
+
 \cite{duchi2010ranking} studies consistency of pdloss. They show two widely used surrogates are not generally consistent. Then they gives low.noise condition on the probability distribution under which we can have calibrated surrogate loss. \cite{ramaswamy2013convex} generalizes low.noise condition and provides another more general condition and surrogate loss. 
 
 Unfinished

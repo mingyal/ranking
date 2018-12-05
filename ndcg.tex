@@ -31,7 +31,7 @@ these in using the discount and gain functions respectively.
 If the algorithm is to output a scoring function and has access to relevance
 scores as labels, perhaps the simplest idea is to minimize similarity between
 the function output and labels; when they are equal, the NCDG is also one.
-In~\cite{cossock2008subset}, it was
+In~\cite{cossock2008subset}, Cossock and Zhang
 established that regression works, in the sense that minimizing the least-squares
 surrogate
 \begin{align*}
@@ -60,11 +60,13 @@ with the weight $w_{j,k}$.)
 The pairwise approach attempts to reduce the problem of
 ranking to the problem of classifying a pair as $\pm 1$ (i.e.,
 when an object should be preferred over another). Some choices of $\phi'$
-are the hinge loss of Ranking SVM~\cite{Herbrich99rankingsvm}
-($\phi'(s, y) = \1_{y < 0}(1 - s)_+$),
+are the hinge loss of Ranking SVM~\cite{Herbrich99rankingsvm},
+%($\phi'(s, y) = \1_{y < 0}(1 - s)_+$),
 exponential loss of RankBoost~\cite{Freund98rankboost},
 and the logistic loss of RankNet~\cite{Burges05ranknet}.
-It is instructive to review how the logistic loss of RankNet is derived.
+
+It is instructive to review how the logistic loss of RankNet is derived, because
+of its influence on current state-of-the-art approaches.
 First, formulate a probability model for the probability
 of a pair $(x_j, x_k)$ receiving the label $+1$, based on the function's
 output. Then think of $\text{sign}(y_j - y_k)$
@@ -88,86 +90,92 @@ RankNet uses the probability models
 (The latter can be changed to a proportion over the training set.)
 Computing the KL divergence gives $\phi'(s, y) = -\overline{p} s + \log(1 + e^s)$,
 where
-$\overline{p} = \Pr[\text{$(x_j, x_k)$ has label $+1$} ; \text{sign}(y_j - y_k)]$. 
+$\overline{p} = \Pr[\text{$(x_j, x_k)$ has label $+1$} ; \text{sign}(y_j - y_k)]$.
+RankNet then uses stochastic gradient descent to minimize this loss over the
+training set.
 
-An important observation of the pairwise approach is that these surrogates
-penalize misordered pairs $x_j$, $x_k$ the same regardless of where they
-reside in the true sorted list according to $y$. 
-Considering that NDCG places more weight on doing well near the top of the list
-compared to below, Burges et.\ al.\ adapted the gradient in the gradient descent
-used by RankNet to place more weight on improving performance for items near
-the top. This method is called LambdaRank, and has inspired a number of
-ranking algorithms, such as LambdaMart~\cite{Burges2010ranknetlambdamart} and
-LambdaNeuralRank~\cite{papini2012neuralrank}
-that are now state-of-the-art~\cite{tax2015benchmark}.
-
-How these pairwise approaches relate to a ranking measure like NDCG in general
-is less clear than the pointwise case.
-In~\cite{chen2009rankingmeasures}, Chen et.\ al.\ resolved this by defining
-a notion of an essential loss $\ell(f; \vec{x}, y)$, which is computed as a
-weighted sum of $n$ 0-1 misclassification errors. Each of these errors arise
-from the classification task of having $f$ output the right object at position
-$j$ according to $y$, after the objects at positions $1, \ldots, j-1$ have been
+Analyzing how these pairwise approaches relate to a ranking measure like
+NDCG in general is more difficult than the pointwise case.
+In 2009, Chen et.\ al.~\cite{chen2009rankingmeasures} shed some light on this
+by defining a notion of an essential loss $\ell(f; \vec{x}, y)$, which
+is computed as a weighted sum of $n$ 0-1 misclassification errors.
+Each of these errors arise from using $f$ to predict the right object at
+position $j$ according to $y$,
+after the objects at positions $1, \ldots, j-1$ (according to $y$) have been
 removed. They showed that this essential loss is a proxy bounded by
 the surrogate loss and the ranking loss $1 - \text{NDCG}(\vec{s}, \vec{y})$.
 Using this idea, they showed that Ranking SVM, RankBoost, and RankNet all
 minimize $1 - \text{NDCG}(\vec{s}, y)$.
 
-MOVE TO PD SECTION:
-In terms of consistency, Duchi et.\ al.~\cite{duchi2010ranking}
-studied the consistency of pairwise
-surrogates, and proved that a surrogate is consistent w.r.t. a
-loss $\ell(\sigma, G)$ that is sensitive only to changes in rank
-(e.g.\ PD loss and NDCG) iff it is $\ell$-calibrated (called edge-consistent
-in that paper). Using calibration, they showed that Ranking SVM and RankBoost
-are inconsistent w.r.t.\ PD loss, even under a low-noise assumption.
-However, empirical success of these pairwise surrogates led to another study
-that generalized edge-consistency/calibration to a condition they called
-rank-consistency.
-Roughly, a surrogate is rank-consistent if all its minimizers
-disagree with every non-minimizer of $\ell$ on some pair. Under a condition
-on distributions that they call rank-differentiability,
-similar to the low-noise condition, weighted pairwise surrogates are consistent
-w.r.t.\ PD loss. The surrogates of Ranking SVM, RankBoost, and RankNet, are
-all instances, and are hence consistent w.r.t.\ PD loss.
-END MOVE.
+An observation of the pairwise approach, however, is that pairwise surrogates
+penalize misordered pairs $x_j$, $x_k$ the same regardless of where they
+reside in the true sorted list according to $y$.
+Considering that NDCG places more weight on doing well near the top of the list
+compared to below, Burges et.\ al. adapted the gradient in the gradient descent
+used by RankNet to place more weight on improving performance for items near
+the top. This method is called LambdaRank~\cite{Burges2007lambdarank},
+and has inspired a number of
+ranking algorithms like LambdaMart~\cite{Burges2010ranknetlambdamart} and
+LambdaNeuralRank~\cite{papini2012neuralrank}
+that are now state-of-the-art~\cite{tax2015benchmark}. However, they
+have been difficult to analyze because the virtual gradient corresponds to
+an implicit loss function.
 
-Without heuristics like the virtual gradient of RankNet, the pairwise approach
-does not incorporate bias towards the top. Hence
-in~\cite{cao2007-pairwiselistwise}, Cao et.\ al.\ proposed the use of 
-surrogates that is defined over the whole list of items and hence takes the
-whole structure into account -- this is termed the listwise approach
+In~\cite{cao2007-pairwiselistwise}, Cao et.\ al.\ proposed using 
+surrogates that are defined over the whole list of items and deals with ranking
+more directly. This is termed the listwise approach. 
 (POSSIBLY INCLUDE BACKPOINTER TO XIA HERE).
 In that work, like in RankNet, we use probability models, but this time of
 \begin{align*}
-  &\Pr[\text{$(x_1, \ldots, x_n)$ is ordered according to $\sigma$} ; \vec{s}] \\
-  &\Pr[\text{$(x_1, \ldots, x_n)$ is ordered according to $\sigma$} ; y].
+  &\Pr[\text{($x_1, \ldots, x_n$) is ordered according to $\sigma$} ; \vec{s}] \\
+  &\Pr[\text{($x_1, \ldots, x_n$) is ordered according to $\sigma$} ; y].
 \end{align*}
 This is thus a generalization of RankNet from pairwise to listwise. To make
 computation tractable, the two models are replaced with just a model of
 $x_j$ being ranked first, but the loss is still the KL divergence of these two.
-This method is called ListNet, and also ranks among the state-of-the-art in the
-cross-benchmark study. Similar ideas come up in other work, e.g.\ ListMLE
-uses just a model for 
+This method is called ListNet, and also ranks among the
+state-of-the-art~\cite{tax2015benchmark}.
 
-In~\cite{ravikumar2011ndcg}, it was established that the normalization factor
-in NDCG is crucial for consistency; the main result is that a surrogate is
+Similar ideas of modeling distributions over permutations and scores 
+have come up in other work. For example, ListMLE~\cite{xia2008listwise}
+compares function output $\vec{s}$ with relevance scores $y$ directly
+by defining a probability model for $\Pr[y \mid \vec{s}]$, and using the
+negative log-likelihood of the sample as the loss.
+SoftRank~\cite{taylor2008softrank} likewise models a distribution over scores
+$\Pr[y \mid \vec{s}]$, but uses a Gaussian model (mean-centered at $\vec{s}$),
+and uses this to induce a distribution $\Pr[\sigma ; \vec{s}]$ over rankings;
+then the loss is given by a ``soft'' NDCG:
+\begin{align*}
+  \text{SoftNDCG}(\vec{s}, y) = \sum_{\sigma} \text{NDCG}(\sigma, y) \Pr[\sigma ; \vec{s}].
+\end{align*}
+The key point is that this Gaussian smoothing makes the function differentiable,
+allowing for direct optimization via gradient descent.
+
+The use of these probability models have recently culminated in a deeper understanding
+of LambdaRank, unifying the heuristic modification inspired from the
+pairwise view with the listwise view.
+Building on SoftRank, recent work this year addressed the implicit loss in
+LambdaRank~\cite{wang2018lambdaloss}.
+Generalizing these probability models, they define a probability model
+for $\Pr[y \mid \vec{s}]$ as the following mixture model:
+\begin{align*}
+  \Pr[y \mid \vec{s}] = \sum_{\sigma \in P_n} \Pr(y ; \vec{s}, \sigma) \Pr(\sigma ; \vec{s})
+\end{align*}
+LambdaRank can be seen as an instance of this LambdaLoss model,
+giving it an explicit form and a theoretical explanation. 
+
+%The essential-loss proxy of Chen et. al.~\cite{chen2009rankingmeasures}
+%applies to show that the ListMLE loss upper-bounds
+%$1 - \text{NDCG}(\vec{s}, y)$.
+
+In terms of consistency results for all these algorithms, Ravikumar
+et.\ al.~\cite{ravikumar2011ndcg} showed that the normalization factor
+in NDCG is crucial for consistency; their main result is that a surrogate is
 consistent iff for all $\X$-conditional distributions on relevance scores,
 the minimizer achieving the conditional surrogate risk
 respects the order induced by the expected value of $\frac{G(y)}{N(y)}$.
-It was found that the
-least-squares loss and ListNet mentioned above are both not consistent, because
-they do not use the right normalization; corrections to make them consistent
-were then proposed.
-
-Recent work this year addressed the implicit loss in
-LambdaRank~\cite{wang2018lambdaloss}.
-Generalizing the probability models above, they define a probability model for
-$\Pr[y \mid \vec{s}]$ as a mixture model, i.e.\
-\begin{align*}
-  \Pr[y \mid \vec{s}] = \sum_{\sigma \in P_n} \Pr(y ; \vec{s}, \sigma) \Pr(\sigma ; \vec{s}).
-\end{align*}
-LambdaRank can be seen as an instance of this model, giving it a theoretical
-explanation. 
-However, it is still unclear whether this surrogate is consistent; this is an
-avenue for future research. 
+It was found that the pointwise least-squares loss and ListNet mentioned above
+are actually not consistent because they do not use the right normalization, but
+corrections can be made to make them consistent.
+Consistency of the surrogate used in LambdaRank (as explained by LambdaLoss)
+is unclear, and is an avenue for future research.
