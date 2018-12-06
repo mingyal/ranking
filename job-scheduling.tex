@@ -53,8 +53,22 @@ same round as $j$ or after $j$, so we incur a penalty of $y_{ij}^G$ when
 this is the case. For the second summand, we sum up the costs of all rounds
 that we enter for the schedule. 
 
-It is easy to see that this problem is related to ranking: a scheduling
-function $f$ is similar to a scoring function that outputs relevance scores.
+\textcolor{red}{It is easy to see that this problem is related to ranking: a scheduling
+function $f$ is similar to a scoring function that outputs relevance scores.}
+
+\textcolor{green}{Re-writing the target loss to be
+\begin{equation*}
+\ell(\vec{y},\vec{c}), f)
+=\bigg(\sum_{i,j: i \neq j} y_{ij} \1_{\{f(i) > f(j)\}}\bigg)+\bigg(\sum_{i,j: i \neq j} y_{ij} \1_{\{f(i) \geq f(j)\}}+\sum_{i=1}^r c_i \1[\max_k f(k) \geq i]\bigg)
+\end{equation*}
+The first part is the pdloss on ranking, and the second part is on clustering on DAGs. The similar clustering problem, taken into account the number of clusters and clustering cost, have been studied \cite{Kiyohito2010MAC}. So our problem can be regarded as finding best scheduling function which take care of both ranking and clustering.
+The key idea for us to search the best scheduling function:
+\begin{itemize}
+	\item Show that best scheduling function should respect the ranking order
+	\item Use the clustering algorithm to get best clusters based on the ranking.
+\end{itemize} 
+Unsolved problem: A lot of clustering algorithms are based on the condition that clustering cost is a submodular function. But in our case, it is not(assumption 1 contradicts submodularity). This a tradeoff between ranking and clustering.
+}
 
  
 
