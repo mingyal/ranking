@@ -15,41 +15,48 @@ so an execution plan deemed optimal before execution can become sub-optimal
 during its lifetime~\cite{mahajan2018qoop}.
 
 With this as setting, one may consider learning a decision rule for
-scheduling tasks.
-We consider $\X$ to be some set of feature vectors
+scheduling tasks, say for minimizing makespan. We make the simplification
+that execution of proceed in rounds (e.g., MapReduce), and suppose that
+there is a cost vector $(c_1, \ldots, c_n)$ for scheduling tasks, where
+each $c_i$ is the cost of entering round $i$. The objective,
+then, is to pack the tasks into as few rounds as possible, while respecting
+edge dependencies as much as possible. 
+
+Formally, let $\X$ be some set of feature vectors
 (extracted from the query, tasks, resources at time of execution,
-time-of-day, and so on), and $\Y$ to be the set of preference graphs with
-appropriate augmentation depending on the metric of interest. Samples
-$S = \{((x_{i,j})_{j=1}^{n_i}, y_i)_{i=1}^m\}$ may come from computing the best DAG
-in hindsight and collecting statistics. We want the learning algorithm to
-output a DAG that minimizes $\ell$-risk for some suitable loss $\ell$.
-
-If we make the simplification that execution of plans proceed in rounds (e.g.\
-MapReduce), ranking techniques can be brought to bear. Specifically,
-let the prediction space be
-$\Yh = \{f: \bigcup_{i=1}^n \X^n \to \mathbb{Z}_+\}$,
-i.e.\ functions which stratifies jobs into rounds. This is no different from
-functions that output relevance scores.
-
-\subsubsection{Minimizing Job Completion Time and Parallel Processing Cost?}
-Here, we want the scoring function to output as few rounds as possible.
-A way to do this is as follows. For $r$ items, let
+time-of-day, and so on), and let
 \begin{align*}
-  \Y_r &= \{ (G, \vec{c})
-  \mid \text{$G$ is a weighted DAG on $[r]$ and $\vec{c} =( c_1, \ldots, c_r), c_1< ...< c_r$}
-  \}.
+  \Y_n &= \{ (G, \vec{c})
+  \mid \text{$G$ is a weighted DAG on $[n]$
+    and $\vec{c} =( c_n, \ldots, c_n), c_1 < ...< c_n$}
+  \}
 \end{align*}
-The label space is $\Y = \Y_r$ is a set of finite number of weighted DAGs
-over $r$ items. We interpret each $c_i$
-to be the unit cost incurred for scheduling a task past round $i$.
-The prediction space $\mathcal{T}$ has size $r^r$
-
-The loss $\ell$ can then be defined as:
+Samples $S = \{((x_{i,j})_{j=1}^{n_i}, (G_i, \vec{c}_i))_{i=1}^m\}$ may come from
+computing the best DAG in hindsight and collecting statistics. We want the
+learning algorithm to output a function that stratifies tasks into rounds,
+i.e.,
 \begin{align*}
-  \ell(f, (G, \vec{c}))
-  = \sum_{i,j: i \neq j} w_{i,j}^G \1_{f(i) \geq f(j)}
-  + \sum_{i=1}^n c_i \sum_{j=1}^n \1_{f(j) \geq i}
+  \Yh = \bigcup_{n=1}^\infty \Yh_n
+  = \bigcup_{n=1}^\infty \{f: \bigcup_{i=1}^n \X^n \to \mathbb{Z}_+^n\}.
 \end{align*}
+We interpret a graph $G$ as just its set of weights $\{y_{i,j}\}_{i,j \in V(G)}$,
+and think of $y_{ij} > 0$ to mean that we prefer task $i$ to be scheduled before
+task $j$ (moreover with weight $y_{ij}$).
+
+The loss we consider is then
+\begin{align*}
+  \ell(\vec{y},\vec{c}), f)
+  =\sum_{i,j: i \neq j} y_{ij} \1_{\{f(i) \geq f(j)\}}+\sum_{i=1}^r c_i \1[\max_k f(k) \geq i]
+\end{align*}
+For the first summand, having $f(i) \geq f(j)$ means to schedule $i$ in the
+same round as $j$ or after $j$, so we incur a penalty of $y_{ij}^G$ when
+this is the case. For the second summand, we sum up the costs of all rounds
+that we enter for the schedule. 
+
+It is easy to see that this problem is related to ranking: a scheduling
+function $f$ is similar to a scoring function that outputs relevance scores.
+
+ 
 
 \input{job-scheduling-mingyang}
 

@@ -1,5 +1,42 @@
 \section{Pairwise Disagreement Loss}\label{sec:pdloss}
 
+
+
+Before talking about the pdloss, we first consider an example. Assume a friend ask you which recommendation about restaurants nearby. From your experience, you have tried $10$ restaurants. For any two restaurants, you can told your friend which one is better and how better it is. Now you can work on to figure out a recommandation ranking about these $10$ restaurants under the inplicit requirement that if restaurant $a$ is better than restaurant $b$, then probabably you would recommend your friend going to $a$ first. 
+
+
+The above ranking problem can be formulated as $\{q, \mathbf{x}, (\mathcal{G}, \mathbf{p})\}_{q=1}^Q$, where $q$ is a query(restaurants nearby), $\mathbf{x}$ is the results of query $q$(features of restaurants), and $\mathcal{G}$ is a set of possible preferences DAG over $\mathbf{x}$ with distribution $\mathbf{p}$(in above example we only consider 1 DAG, but your friends may ask multiple people to get multiple graphs). The prediction space is permutations over $\mathbf{x}$. Naturally, we want to ranking $i$ item higger then $j$ item, if from the preference graph $i$ item is better than $j$ item, represented as there is an edge $y_{ij}$. That is the basic ideal for pdloss. PD Loss is a widely used loss for ranking \cite{duchi2010ranking}, \cite{lan2012}, \cite{ramaswamy2013convex}. 
+
+Assume we have $r$ items to be ranked. The instance space is $\mathbf{x}$ with length $r$. The label space $\mathcal{Y}$ consists of a finite number of (possibly weighted) DAGs over r items, each represented as a vector $\mathbf{y}\in \mathbb{R}_+^{r(r-1)}$. At least one of $y_{ij}$ or $y_{ji}$ is $0$ for each $i\not=j$, with $y_{ij}>0$ indicating a preference for document $i$ over document $j$ and $y_{ij}$ denoting the weight of the preference. The prediction space is $S_r$. For $\mathbf{y}\in \mathcal{Y}, \sigma\in S_r$
+$$l_{PD}(\mathbf{y}, \sigma)=\sum\limits_{i=1}^r\sum\limits_{j\not=i}y_{ij}1(\sigma(i)>\sigma(j))$$
+
+\begin{center}
+	\footnotesize
+	\begin{tabular}{ | p{5.1cm} | p{5.9cm} | p{3cm} |c|}
+		\hline
+		surrogate & pred & Remark&paper\\ \hline
+		$\psi^*_{PD}(\mathbf{y}, \mathbf{u})=\sum\limits_{i=1}^r\sum\limits_{i\not=j}(u_{ij}-y_{ij})^2$ &$\text{pred}^*_{PD}(\mathbf{u})\in\text{argmin}_{\sigma}\sum\limits_{i=1}^r\sum\limits_{i\not=j}u_{ij}1_{\{\sigma(i)>\sigma(j)\}}$ & Consistent, but not computable. pred is same as original problem& \cite{ramaswamy2013convex}
+		\\ \hline
+		$\psi_f(\mathbf{y}, \mathbf{u})=\sum\limits_{i=1}^r(u_i-f_i(\mathbf{y}))^2$ & $\text{pred}(\mathbf{u})\in\{\sigma: \sigma(i)<\sigma(j) \text{, if }u_i>u_j\}$  & Consistent, if $\mathbf{p}\in \mathcal{P}_{f}$ &\cite{ramaswamy2013convex}, \cite{duchi2010ranking}\\
+		\hline
+		$\psi^*_{PD}(\mathbf{y}, \mathbf{u})=\sum\limits_{i=1}^r\sum\limits_{i\not=j}(u_{ij}-y_{ij})^2$ & $\overline{\text{pred}}_{PD}(\mathbf{u})$  & Consistent, if $\mathbf{p}\in \mathcal{P}_{\text{DAG}}$ &\cite{ramaswamy2013convex}\\
+		\hline
+		$\psi(\mathbf{y}, \mathbf{u})=\sum\limits_{(i\rightarrow j)\in G}\phi(u_{i}-u_{j}-h(y_{ij}))$,
+		
+		with proper assumption for $\phi$ & $\text{pred}(\mathbf{u})\in\{\sigma: \sigma(i)<\sigma(j) \text{, if }u_i>u_j\}$  & Not consistent, even under low.noise condition&\cite{duchi2010ranking}\\
+		\hline
+		$\psi(\mathbf{y}, \mathbf{u})=\sum\limits_{(i\rightarrow j)\in G}h(y_{ij})\phi(u_{i}-u_{j})$,
+		
+		with proper assumption for $\phi$& $\text{pred}(\mathbf{u})\in\{\sigma: \sigma(i)<\sigma(j) \text{, if }u_i>u_j\}$  & Not consistent, even under low.noise condition &\cite{duchi2010ranking} \\
+		\hline
+	\end{tabular}
+\end{center}
+
+
+\cite{duchi2010ranking} studies consistency of pdloss. They show two widely used surrogates are not generally consistent. Then they gives low.noise condition on the probability distribution under which we can have calibrated surrogate loss. \cite{ramaswamy2013convex} generalizes low.noise condition and provides another more general condition and surrogate loss. 
+
+Unfinished
+
 In terms of consistency, Duchi et.\ al.~\cite{duchi2010ranking}
 studied the consistency of pairwise
 surrogates, and proved that a surrogate is consistent w.r.t. a

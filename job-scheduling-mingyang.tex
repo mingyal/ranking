@@ -1,25 +1,5 @@
 
-\textcolor{red}{Mingyang: The loss defined below eq(1) is easier to analyze and have the same property to penalize depth.}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Mingyang's draft for Minimizing Job Completion Time}
-
-TODO:
-\begin{itemize}
-\item Nicolas: Explanation of the problem, possibility of using ranking
-  algorithms to solve this problem. 
-\item Shivani's method that justifies using squared loss as a surrogate
-  (justification: it is consistent). This reduces the problem to just a
-  clustering problem giving a ranking.
-\item Connection between surrogate score output $u_{ij}$'s and the analysis
-  of the expected graph. Clarifying notation that $y_{ij} = \E_G[y_{ij}]$.
-\item Preliminary result: Under some assumptions on the distribution of graphs,
-  the Bayes-consistent clustering must respect the Bayes-consistent ranking.
-\item Change $m$ to $\sigma^*$ in Assumption.
-\item Strengthen clusters to adjacent clusters in proof. 
-\item Using uniqueness condition in proof. 
-\end{itemize}
 
 \iffalse
 Let consider $5$ items. The true permutation $\sigma^*: \sigma^*(i)=i$. If we have a mapping $m$ with $m(1)=1, m(2,4)=2, m(3,5)=3$, then it has a wrong ranking for pair $(3,4)$. Let $m'$ be the flip mapping. 
@@ -34,40 +14,85 @@ If $y_{34}=1, y_{43}=0$, which is the only edge in the difference, and $y_{24}=y
 \begin{equation}\label{eq:pdloss}
 \begin{split}
 %\text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i\big(\sum_{j=1}^r1_{\{m(j)\geq i\}}\big)=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} 
-\text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} 
+\text{Target Loss: }l: \mathcal{Y}\times\mathcal{T}, \text{ with } l((\mathbf{y},\mathbf{c}),  m)=\sum\limits_{i\not=j}y_{ij}1_{\{m(i)\geq m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}
 \end{split}
 \end{equation}
-, where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{ramaswamy2013convex}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
+The best scheduling function $m^*\in \text{argmin}E[l((\mathbf{y},\mathbf{c}),  m)]$. Since this loss is a sum of weighted indicator functions, which is not convex and differentiable. In order to derive $m^*$, we seek to use surrogate loss. Note that we can rewrite the target loss as $l((\mathbf{y},\mathbf{c}),  m)=(\mathbf{y}', \mathbf{c}')\begin{pmatrix} \mathbf{\Phi}_1(m) \\\mathbf{\Phi}_2(m) \\\end{pmatrix} $, where $\mathbf{\Phi}_1(m)$ is $r(r-1)$ length vector with entries $1_{\{m(i)\geq m(j)\}}$, and  $\mathbf{\Phi}_2(m)$ is $r$ length vector with entries $1_{\{(\max_jm(j))\geq i\}}$.  By Theorem 3 \cite{ramaswamy2013convex}, we have $l$-calibrated surrogate $(\psi_l^*, \text{pred}_l^*)$ , where
 \begin{equation*}
 \begin{split}
-\psi_l^*((\mathbf{y},\mathbf{c}), (\mathbf{u}, \mathbf{v}))=\sum\limits_{i\not=j}^{r}(u_{ij}-y_{ij})^2+\sum\limits_{k=1}^r(v_k-c_i)^2,\quad \text{pred}_l^*(\mathbf{u}, \mathbf{v})\in\text{argmin}_{m\in \mathcal{T}}\bigg(\mathbf{u}'\mathbf{\Phi}_1(m)+\mathbf{v}'\mathbf{\Phi}_2(m)\bigg)
+\psi_l^*((\mathbf{y},\mathbf{c}), (\mathbf{u}, \mathbf{v}))=\sum\limits_{i\not=j}^{r}(u_{ij}-y_{ij})^2+\sum\limits_{k=1}^r(v_k-c_k)^2,\quad \text{pred}_l^*(\mathbf{u}, \mathbf{v})\in\text{argmin}_{m\in \mathcal{T}}\bigg(\mathbf{u}'\mathbf{\Phi}_1(m)+\mathbf{v}'\mathbf{\Phi}_2(m)\bigg)
 \end{split}
 \end{equation*}
-It is easy to see that solving $\text{pred}_l^*$ is same as solving original PD-loss problem. 
+This method shows that using simple squared loss, we still can have a consistent solution once we get scores which minimize surrogates and plug these scores into pred function to get $m^*$. Define $y_{ij}^\mathbf{p}=E_\mathbf{p}[y_{ij}]$, $c_{i}^\mathbf{p}=E_\mathbf{p}[c_i]$. Then scores from surrogates are $u_{ij}=y_{ij}^\mathbf{p}$, $v_k=c_k^\mathbf{p}$. However, the optimization problem associated with computing $\text{pred}_l^*(\mathbf{u}, \mathbf{v})$ above is a minimum weighted feedback arc set (MWFAS) problem, which is known to be NP-hard.
 
 
 
-Let $m^*: [r]\rightarrow [r]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. We notice that $m$ must satisfies the below two rules.
-\begin{lemma}
-	Fact1(no gap): For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
+Let $m^*: [r]\rightarrow [r]$ be the optimal solution of eq(\ref{eq:pdloss}), and let $|m|=\max_jm(j)$. Since we want to take advantage of ranking, we would hope $m^*$ would have below two properties, which are stated in Lemma~\ref{lemma:1}, Lemma~\ref{lemma:3}.
+
+\begin{lemma}\label{lemma:1}
+No gap: For any $k\in[|m|]$, $m^{-1}(k)\not=\emptyset$. 
 \end{lemma}
-\begin{proof}
+\begin{proof}[Proof of Lemma \ref{lemma:1}]
 If there exists such a $k$, then we can move all the items ranked lower than $k$ w.r.t $m$ by one level, i.e, set $m'(l)=m(l)-1, \forall l, m(l)>k$. We can reduce the target loss by $c_{|m|}>0$, which contradicts that $m$ is optimal.
 \end{proof}
 
-Before deriving the second fact, we first re-examine the target loss. The target loss can be written as three parts: pdloss, clusterloss, depthloss$$\sum\limits_{i\not=j}y_{ij}1_{\{m(i)> m(j)\}}+\sum\limits_{i\not=j}y_{ij}1_{\{m(i)= m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}$$
+
+
+The second property is Respect DAG: If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$.
+
+
+For us, this property is very initiutive. Also it is very important for us to incorporate the ranking result into this scheduling problem.  Unfortunately, this property is not true generally.
+
+\begin{lemma}\label{lemma:2}
+The second property does not hold even under low noise condition. 
+\end{lemma}
+\begin{proof}[Proof of Lemma \ref{lemma:2}]
+Consider that a true ranking over $3$ items is $1\rightarrow 2\rightarrow 3$. $y_{12}^\mathbf{p}=10+1e^{-5}, y_{21}^\mathbf{p}=10, y_{23}^\mathbf{p}=10+1e^{-5}, y_{32}^\mathbf{p}=10, y_{13}^\mathbf{p}=3\times1e-5, y_{31}^\mathbf{p}=0, c_3^\mathbf{p}=+\infty, c_1^\mathbf{p}=c_2^\mathbf{p}=1e^{-10}$(satisfying low-noise condition).
+
+Then obviously $|m^*|=2$. Consider 3 cases. The first 2 cases are only cases respecting orders.
+	\begin{itemize}
+		\item $m_1: 1\rightarrow 2,3$. $l(m)=y_{23}^\mathbf{p}+y_{32}^\mathbf{p}+y_{21}^\mathbf{p}+y_{31}^\mathbf{p}>30$
+		\item $m_2: 1, 2\rightarrow 3$. $l(m)=y_{12}^\mathbf{p}+y_{21}^\mathbf{p}+y_{31}^\mathbf{p}+y_{32}^\mathbf{p}>30$
+		\item $m_3: 1, 3\rightarrow 2$. $l(m)=y_{13}^\mathbf{p}+y_{31}^\mathbf{p}+y_{21}^\mathbf{p}+y_{23}^\mathbf{p}<30$
+	\end{itemize}
+The best scheduling function $m^*$ will not respect ranking order. 
+\end{proof}
+
+The problem is on the inconsistent magnitutde of perference. In the example, although the difference $y_{13}^\mathbf{p}-y_{31}^\mathbf{p}$ is bigger than the other two, but the magnitude of the perference $y_{13}^\mathbf{p}$ and $y_{31}^\mathbf{p}$, or a more direct measure of consistency of magnitude, $y_{13}+y_{31}$ is not comparable w.r.t $y_{12}^\mathbf{p}+y_{21}^\mathbf{p}$ and $y_{23}^\mathbf{p}+y_{32}^\mathbf{p}$.  So we come up with an assumption:  the clustering cost of two items $y_{ij}+y_{ji}$ is no less than the sum of clustering cost of any two adjacent items w.r.t $\sigma^*$ between $i,j$. Here two adjacent items w.r.t $\sigma^*$ between $i,j$ means $\max(\sigma^*(k),\sigma^*(l))\leq  \max(\sigma^*(i),\sigma^*(j))$ and $\min(\sigma^*(k),\sigma^*(l))\geq  \min(\sigma^*(i),\sigma^*(j))$ and $|\sigma^*(k)-\sigma^*(l)|=1$. The more formal form is stated in below.
 
 \begin{assumption}
-	There is a unique total order $\sigma^*$. For any  $i\not=j $, wlog $m(i)<m(j)$
-	$$y_{ij}+y_{ji}\geq \sum\limits_{k\in \{l: \sigma^*(l)\in [m(i), m(j)]\}, l={(\sigma^*)}^{-1}(\sigma^*(k)+1)\}}y_{kl}+y_{lk}$$
+	There is a unique total order $\sigma^*$. For any  $i\not=j $, wlog $\sigma^*(i)<\sigma^*(j)$
+	$$y_{ij}^\mathbf{p}+y_{ji}^\mathbf{p}\geq \sum\limits_{k\in \{l: \sigma^*(l)\in [\sigma^*(i), \sigma^*(j)]\}, l={(\sigma^*)}^{-1}(\sigma^*(k)+1)\}}y_{kl}^\mathbf{p}+y_{lk}^\mathbf{p}$$
 \end{assumption}
-It means under total ranking, clustering two nodes will incur strict bigger loss than sum of  clustering loss of any two items between them. 
+
+
+To justify this assumption, let's consider another appealing ( perference stability )assumption 2: if for one $G\in \mathcal{G}$, $y_{ij}\geq 0$, then $y_{ij}\geq0$ for the rest of graphs. That implies, at least one of $y_{ij}^\mathbf{p}$ and $y_{ji}^\mathbf{p}$ is $0$.  Under this assumption,  Assumption 1 holds automatically under low noise conidtion by following argument. Assume there is a path $i_1\rightarrow...\rightarrow i_k$ in the difference graph, that is to say,
+\begin{itemize}
+	\item $(y_{i_1,i_2}^\mathbf{p}-y_{i_2,i_1}^\mathbf{p}),...(y_{i_{k-1},i_k}^\mathbf{p}-y_{i_{k}, i_{k-1}}^\mathbf{p})>0$ by uniqueness of rank;
+	\item $y_{i_2,i_1}^\mathbf{p} = ... =y_{i_{k}, i_{k-1}}^\mathbf{p} = 0$ by assumption 2.
+	\item  $y_{i_1, i_k}^\mathbf{p}-y_{i_k,i_{k-1}}^\mathbf{p}\geq (y_{i_1,i_2}^\mathbf{p}-y_{i_2,i_1}^\mathbf{p})+...+(y_{i_{k-1},i_k}^\mathbf{p}-y_{i_{k}, i_{k-1}}^\mathbf{p})>0$ by low noise
+\end{itemize} Then it is just equivalent to  
+$y_{i_1, i_k}^\mathbf{p}+y_{i_k,i_{k-1}}^\mathbf{p}\geq (y_{i_1,i_2}^\mathbf{p}+y_{i_2,i_1}^\mathbf{p})+...+(y_{i_{k-1},i_k}^\mathbf{p}+y_{i_{k}, i_{k-1}}^\mathbf{p})>0$
+which is just assumption 1. 
+
+Now we want to show Property 2 under assumption 1. 	 Before the proof, we first re-write the target loss as three parts: pdloss, clusterloss, depthloss$$\sum\limits_{i\not=j}y_{ij}1_{\{m(i)> m(j)\}}+\sum\limits_{i\not=j}y_{ij}1_{\{m(i)= m(j)\}}+\sum\limits_{i=1}^rc_i1_{\{(\max_jm(j))\geq i\}}$$
 
 \begin{lemma}
-Fact2(respect DAG): If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$.
+  \label{lemma:3}
+	Respect DAG: If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$ under assumption 1.
 \end{lemma}
 \begin{proof}
-	If not, then for $m$, there must exist two clusters which do not respect DAG. That is to say, for some $k<l$, and let the first cluster $C_1=\{i: m(i)=k\}$, the second $C_2=\{j:m(j)=l\}$, $\exists \text{ pair } (i,j)\in (C_1, C_2)$, $\sigma^*(i)>\sigma^*(j)$. Now consider $m'$ which flip all these pairs of $m$ until we can not find more such pairs. and keep the rest of clusters unchanged. When we cannot find more such pairs, let $C_{1,u}$ be items previously in $C_1$ and now still in $C_1$;   $C_{1, d}$ be items previously in $C_1$ but now in $C_2$;  et $C_{2,u}$ be items previously in $C_2$ but now in $C_1$;   $C_{2, d}$ be items previously in $C_2$ and now still in $C_2$. Since we only do flip pairs, $|C_{1,d}|=|C_{2,u}|$.
+
+	
+	
+	
+	If not, then for $m$, there must exist two adjacent clusters which do not respect DAG. That is to say, for some $l,k$ with $l=k+1$, and let the $k$-th cluster $C_1=\{i: m(i)=k\}$, the $l$-th cluster $C_2=\{j:m(j)=l\}$, $\exists \text{ pair } (i,j)\in (C_1, C_2)$, $\sigma^*(i)>\sigma^*(j)$. 
+	
+	If there do not exist such two adjacent clusters, then it means all items in $i$-th cluster ranks higher than $i+1$-th cluster for any $i$. This just means, $m$ respect the ranking order.
+	
+	
+	
+	Now consider $m'$ which flip all these pairs of $m$ until we can not find more such pairs. and keep the rest of clusters unchanged. When we cannot find more such pairs, let $C_{1,u}$ be items previously in $C_1$ and now still in $C_1$;   $C_{1, d}$ be items previously in $C_1$ but now in $C_2$;  et $C_{2,u}$ be items previously in $C_2$ but now in $C_1$;   $C_{2, d}$ be items previously in $C_2$ and now still in $C_2$. Since we only do flip pairs, $|C_{1,d}|=|C_{2,u}|$.
 	\begin{equation}
 	\begin{split}
 	&C_1=  C_{1,u}\cup C_{1,d}\\
@@ -81,8 +106,8 @@ Fact2(respect DAG): If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$.
 		\item depthloss: $m$ and $m'$ have same depthloss.
 		\item clusteringloss: let $C_{cl}(m)$, $C_{cl}(m')$ be clusteringloss for $m, m'$
 		\begin{itemize}
-			\item $C_{cl}(m)=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, d}}(y_{ij}+y_{ji}) \bigg)+\bigg( \sum\limits_{i\in C_{2, u}, j\in C_{2, d}}(y_{ij}+y_{ij})\bigg)$
-						\item $C_{cl}(m')=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{2, u}}(y_{ij}+ y_{ij})\bigg)+\bigg( \sum\limits_{i\in C_{1, d}, j\in C_{2, d}}(y_{ij}+y_{ij})\bigg)$
+			\item $C_{cl}(m)=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij}^\mathbf{p} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij}^\mathbf{p} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, d}}(y_{ij}^\mathbf{p}+y_{ji}^\mathbf{p}) \bigg)+\bigg( \sum\limits_{i\in C_{2, u}, j\in C_{2, d}}(y_{ij}^\mathbf{p}+y_{ij}^\mathbf{p})\bigg)$
+						\item $C_{cl}(m')=\bigg(\sum\limits_{i\in C_{1, u}, j\in C_{1, u}}y_{ij}^\mathbf{p} + \sum\limits_{i\in C_{2, d}, j\in C_{2, d}}y_{ij}^\mathbf{p} \bigg)+ \bigg(\sum\limits_{i\in C_{1, u}, j\in C_{2, u}}(y_{ij}^\mathbf{p}+ y_{ij}^\mathbf{p})\bigg)+\bigg( \sum\limits_{i\in C_{1, d}, j\in C_{2, d}}(y_{ij}^\mathbf{p}+y_{ij}^\mathbf{p})\bigg)$
 		\end{itemize}
 	By our flip rule, $\sigma^*(i)>\sigma^*(j)$ for any $i\in C_{1,d}\cup C_{2,d}, j\in C_{2,u}\cup C_{1,u}$. If not, the fliping process will not stop. Since the first big bracket is same for $m$ and $m'$, we only work on the rest two. For any $i\in C_{1,u}$, $j\in C_{2,d}, k\in C_{2,u}, l\in C_{1,d} $, There are four possibilities:
 	\begin{itemize}
@@ -94,45 +119,46 @@ Fact2(respect DAG): If $\sigma^*(k)<\sigma^*(l)$, then $m(k)\leq m(l)$.
 For the first case
 \begin{equation*}
 \begin{split}
-(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{ij}+y_{ji}+y_{jl}+y_{li}) + (y_{ki}+y_{ik}+y_{ij}+y_{ji})\\
-&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+(y_{il}^\mathbf{p}+y_{li}^\mathbf{p})+(y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p})&\geq (y_{ij}^\mathbf{p}+y_{ji}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{li}^\mathbf{p}) + (y_{ki}^\mathbf{p}+y_{ik}^\mathbf{p}+y_{ij}^\mathbf{p}+y_{ji}^\mathbf{p})\\
+&>y_{ik}^\mathbf{p}+y_{ki}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{lj}^\mathbf{p}\\
 \end{split}
 \end{equation*}
+where the last strict inequality follows from uniqueness of total order and low noise conditions. Uniqueness implies for any adjacent pair $(i,j)$ w.r.t $\sigma^*$( a.k.a  $|\sigma^*(i)-\sigma^*(j)|=1$), then $|y_{ij}^\mathbf{p}-y_{ji}^\mathbf{p}|>0$. Low noise condition implies for any pair $(k,l)$, wlog $\sigma^*(k)-\sigma^*(l)<-1$, then $y_{kl}^\mathbf{p}-y_{lk}^\mathbf{p}>\sum\limits_{\text{adjacent pairs }(i,j) \text{cbetween w.r.t }\sigma^* }y_{ij}^\mathbf{p}-y_{ji}^\mathbf{p}>0$. This further implies $y_{kl}^\mathbf{p}+y_{lk}^\mathbf{p}>0$ for any pairs. 
+
 For the second case
 \begin{equation*}
 \begin{split}
-(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{il}+y_{li}) + (y_{ki}+y_{ik}+y_{ij}+y_{ji}+y_{lj}+y_{jl})\\
-&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+(y_{il}^\mathbf{p}+y_{li}^\mathbf{p})+(y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p})&\geq (y_{il}^\mathbf{p}+y_{li}^\mathbf{p}) + (y_{ki}^\mathbf{p}+y_{ik}^\mathbf{p}+y_{ij}^\mathbf{p}+y_{ji}^\mathbf{p}+y_{lj}^\mathbf{p}+y_{jl}^\mathbf{p})\\
+&>y_{ik}^\mathbf{p}+y_{ki}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{lj}^\mathbf{p}\\
 \end{split}
 \end{equation*}
 For the third case
 \begin{equation*}
 \begin{split}
-(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq(y_{kj}+y_{jk}) + (y_{ki}+y_{ik}+y_{kj}+y_{jk}+y_{lj}+y_{jl})\\
-&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+(y_{il}^\mathbf{p}+y_{li}^\mathbf{p})+(y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p})&\geq(y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p}) + (y_{ki}^\mathbf{p}+y_{ik}^\mathbf{p}+y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p}+y_{lj}^\mathbf{p}+y_{jl}^\mathbf{p})\\
+&>y_{ik}^\mathbf{p}+y_{ki}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{lj}^\mathbf{p}\\
 \end{split}
 \end{equation*}
 For the fourth case
 \begin{equation*}
 \begin{split}
-(y_{il}+y_{li})+(y_{kj}+y_{jk})&\geq (y_{kl}+y_{lk}+y_{jl}+y_{li}) + (y_{ki}+y_{ik}+y_{kl}+y_{lk})\\
-&>y_{ik}+y_{ki}+y_{jl}+y_{lj}\\
+(y_{il}^\mathbf{p}+y_{li}^\mathbf{p})+(y_{kj}^\mathbf{p}+y_{jk}^\mathbf{p})&\geq (y_{kl}^\mathbf{p}+y_{lk}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{li})^\mathbf{p} + (y_{ki}^\mathbf{p}+y_{ik}^\mathbf{p}+y_{kl}^\mathbf{p}+y_{lk}^\mathbf{p})\\
+&>y_{ik}^\mathbf{p}+y_{ki}^\mathbf{p}+y_{jl}^\mathbf{p}+y_{lj}^\mathbf{p}\\
 \end{split}
 \end{equation*}
 	\end{itemize}
-
-Note that the above inequality is from unique ordering and low.noise condition, because for any $(i,j)$, wlog $m(i)<m(j)$, then $y_{ij}>y_{ji}\geq 0$, which implies $y_{ij}+y_{ji}>0$. Above calculation shows $C_{cl}(m)>C_{cl}(m')$ which contradicts optimality of $m$.
+Above calculation shows $C_{cl}(m)>C_{cl}(m')$ which contradicts optimality of $m$.
 	
 \end{proof}
+
+
 
 
 
 \begin{lemma}
 	The optimal $m^*\in\mathcal{M}$, where  $\mathcal{M}$ is a set containing all elements satisfying Fact2.
 \end{lemma}
-
-
-\begin{comment}
+\iffalse
 Note that if there is a \underline{unique} total order $\sigma^*$, then $\mathcal{M}=\{\sigma^*\}$, and $m$ can be derived by clustering items in $m^*_{pd}$. This motivates us a naive algorithm for deriving $m^*$. Basically, we start from $\sigma^*$, and find the best way to cluster items, that is, reduce the target loss by 
 $$\textbf{ Increase SMALL loss (from $\mathbf{y}$)by clustering, but decrease BIG loss (from $\mathbf{c}$) by smaller depth }$$
 
@@ -156,7 +182,7 @@ cost^m_{i, i+1}&=\sum\limits_{n_1\in \mathcal{C}^m[i]}\sum\limits_{n_2\in \mathc
 , where each summand is non-negative.
 \end{itemize}
 
-	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{ramaswamy2013convex}, \cite{duchi2010ranking}, and then plug $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
+	We first derive a consistent permutation $\sigma^*$ under low.noise condition(or related conditions) \cite{ramaswamy2013convex}, \cite{duchi2011}, and then plug $\sigma^*$ into below algorithm. If there is a unique total ranking and it satisfies low.noise assumptions, we will find a $m$ achieving lowest target loss.
 	
 	\begin{lemma}
 	Given $m$,  define $cost=\text{min}_{i\in [|m|-1]} cost^m_{i, i+1}$. $cost$ is non-decreasing after each clustering.
@@ -234,6 +260,13 @@ To solve this issue, we must go through all possible total ordering. That is, if
 \end{algorithm}
 
 Warning: this algorithm only works under the assumption that $\mathcal{M}$ is small. If $\mathcal{M}$ is huge, then it would be hard to solve the problem quickly. Consider a DAG over $r$ items($r$ is even), with edges $\{(i,i+1)\}_{i=1}^{r/2}\cup \{(i,i+1)\}_{r/2+1}^r$. Then $|\mathcal{M}|=(\frac{r}{2}+1)!$. 
+\fi
 
-\end{comment}
+
+
+
+
+
+
+
 
