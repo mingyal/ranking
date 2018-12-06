@@ -55,6 +55,22 @@ The loss $\ell$ can then be defined as:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Mingyang's draft for Minimizing Job Completion Time}
 
+TODO:
+\begin{itemize}
+\item Nicolas: Explanation of the problem, possibility of using ranking
+  algorithms to solve this problem. 
+\item Shivani's method that justifies using squared loss as a surrogate
+  (justification: it is consistent). This reduces the problem to just a
+  clustering problem giving a ranking.
+\item Connection between surrogate score output $u_{ij}$'s and the analysis
+  of the expected graph. Clarifying notation that $y_{ij} = \E_G[y_{ij}]$.
+\item Preliminary result: Under some assumptions on the distribution of graphs,
+  the Bayes-consistent clustering must respect the Bayes-consistent ranking.
+\item Change $m$ to $\sigma^*$ in Assumption.
+\item Strengthen clusters to adjacent clusters in proof. 
+\item Using uniqueness condition in proof. 
+\end{itemize}
+
 \iffalse
 Let consider $5$ items. The true permutation $\sigma^*: \sigma^*(i)=i$. If we have a mapping $m$ with $m(1)=1, m(2,4)=2, m(3,5)=3$, then it has a wrong ranking for pair $(3,4)$. Let $m'$ be the flip mapping. 
 \begin{itemize}
@@ -165,6 +181,8 @@ Note that the above inequality is from unique ordering and low.noise condition, 
 	The optimal $m^*\in\mathcal{M}$, where  $\mathcal{M}$ is a set containing all elements satisfying Fact2.
 \end{lemma}
 
+
+\begin{comment}
 Note that if there is a \underline{unique} total order $\sigma^*$, then $\mathcal{M}=\{\sigma^*\}$, and $m$ can be derived by clustering items in $m^*_{pd}$. This motivates us a naive algorithm for deriving $m^*$. Basically, we start from $\sigma^*$, and find the best way to cluster items, that is, reduce the target loss by 
 $$\textbf{ Increase SMALL loss (from $\mathbf{y}$)by clustering, but decrease BIG loss (from $\mathbf{c}$) by smaller depth }$$
 
@@ -267,6 +285,7 @@ To solve this issue, we must go through all possible total ordering. That is, if
 
 Warning: this algorithm only works under the assumption that $\mathcal{M}$ is small. If $\mathcal{M}$ is huge, then it would be hard to solve the problem quickly. Consider a DAG over $r$ items($r$ is even), with edges $\{(i,i+1)\}_{i=1}^{r/2}\cup \{(i,i+1)\}_{r/2+1}^r$. Then $|\mathcal{M}|=(\frac{r}{2}+1)!$. 
 
+\end{comment}
 
 
 
